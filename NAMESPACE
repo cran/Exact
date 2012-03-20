@@ -1,0 +1,2 @@
+export("exact.test")
+export("power.exact.test")
