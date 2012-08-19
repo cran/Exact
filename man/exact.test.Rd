@@ -1,14 +1,12 @@
 \name{exact.test}
 \alias{exact.test}
-\alias{Barnard}
-\alias{exact2x2}
 \title{Unconditional exact tests for 2x2 tables}
 \description{
 Calculates Barnard's or Boschloo's unconditional exact test for binomial or multinomial models
 }
 \usage{
-exact.test(data, alternative = "less", npNumbers = 0.01, beta = 0.001, interval = FALSE,
-           method = "Z-pooled", model = "Binomial")
+exact.test(data, alternative = "two.sided", npNumbers = 0.01, beta = 0.001, interval = FALSE,
+           method = "Z-pooled", model = "Binomial",cond.row = TRUE)
 }
 \arguments{
   \item{data}{
@@ -34,22 +32,24 @@ must be either "Z-pooled", "Z-unpooled", or "Boschloo"
   \item{model}{
 The model being used: must be either "Binomial" or "Multinomial"
 }
+  \item{cond.row}{
+Logical: Indicates if row margins are fixed in the binomial models.  Only used if model="Binomial"
+}
 }
 \details{
-Unconditional exact tests can be used for binomial or multinomial models.  The binomial model assumes the rows 
-or columns are known in advance, while the multinomial model only assumes the total sample size is known beforehand.  
-Conditional tests have both rows and columns fixed.  Fisher's test conditions on both margins to avoid estimating a 
+Unconditional exact tests can be used for binomial or multinomial models.  The binomial model assumes the row 
+or column margins (but not both) are known in advance, while the multinomial model only assumes the total sample size is known beforehand.  
+Conditional tests have both row and column margins fixed.  Fisher's test conditions on both margins to avoid estimating a 
 nuisance parameter.  Barnard's test considers all possible values for the nuisance parameter and chooses the one 
 that maximizes the p-value.
 
 There are several statistics used to define tables as more extreme than the observed table.
 The method variable lets the user choose the test statistic being used.
 
-The null hypothesis is that the rows and columns are independent.  The function assumes \emph{the rows are the fixed margins for the binomial model}.
-The null hypothesis can be interpreted as the probability of the top-left cell given
-the first row sample size is equal to the probability of the bottom-left cell given the second row sample size.
-There are many ways to define the two.sided p-value; this version uses the fisher.test approach by summing the 
-probabilities for both sides of the table.
+The null hypothesis is that the rows and columns are independent.  Under the binomial model, the user will need to input which margin is 
+fixed (default is rows).  The null hypothesis can be interpreted as the probability of the top-left cell given the object is in the first 
+fixed group is equal to the probability of the bottom-left cell given the object is in the second fixed group. There are many ways 
+to define the two.sided p-value; this code uses the fisher.test approach by summing the probabilities for both sides of the table.
 }
 \value{
 \item{p.value}{The computed p-value}
@@ -61,40 +61,38 @@ ranges are given}
 
 }
 \references{
-This code is similar to the FORTRAN program located at \url{www.stat.ncsu.edu/exact}.
+This code was influenced by the FORTRAN program located at \url{www.stat.ncsu.edu/exact}
 }
 \author{
 Peter Calhoun
 }
 \note{
-I am indebted to Roger Berger for helping me with some of the theory, Kamil Erguler for changing my one-sided
-p-value calculation, Tal Galili for making my first version of the code accessible to the R community, and
-Philo Calhoun for initiating and supporting my research.
+Multinomial models are much more computationally intensive due to more tables considered and maximizing over two 
+nuisance parameters.  Boschloo's test also takes longer due to calculating Fisher's p-value for every possible table. 
+I suggest keeping the sample sizes small unless user does not mind waiting.
 }
 
 \section{Warning}{Binomial models tend to have memory issues for sample sizes greater than 1000.
-Multinomial models are much more computational intensive due to two nuisance parameters being maximized.
-Boschloo's test also takes longer due to calculating Fisher's p-value for every possible table.
-I suggest keeping the sample sizes small unless the user does not mind waiting.
-}
+Multinomial models may take a very long time, even for sample sizes less than 100.}
 
 \seealso{
-\code{\link{fisher.test},\link{Barnard},\link{exact2x2}}
+\code{\link{fisher.test}}, \code{Barnard}, and \code{exact2x2}
 }
 
 
 \examples{
-data<-matrix(c(7,12,8,3),2,2)
+data<-matrix(c(7,8,12,3),2,2,byrow=TRUE)
 exact.test(data,alternative="less")
-exact.test(data,alternative="two.sided",interval=TRUE,beta=.001,npNumbers=0.01,method="Z-pooled")
-exact.test(data,alternative="two.sided",interval=TRUE,beta=.001,npNumbers=0.01,method="Boschloo")
+exact.test(data,alternative="two.sided",interval=TRUE,beta=0.001,npNumbers=0.001,method="Z-pooled")
+exact.test(data,alternative="two.sided",interval=TRUE,beta=0.001,npNumbers=0.01,method="Boschloo")
 
-data<-matrix(c(6,4,8,3),2,2)
+data<-matrix(c(6,8,4,3),2,2,byrow=TRUE)
 exact.test(data,model="Multinomial",alternative="less",method="Z-pooled")
 }
 
 \keyword{Barnard}
 \keyword{Boschloo}
 \keyword{Unconditional}
+\keyword{Exact}
 \keyword{Nonparametric}
 

@@ -1,6 +1,5 @@
 \name{power.exact.test}
 \alias{power.exact.test}
-\alias{statmod}
 \title{
 Power calculation for unconditional exact test
 }
@@ -53,43 +52,46 @@ Number of simulations run.  Only used if simulation=TRUE
 }
 }
 \details{
-The power calculations are for binomial models.  The design must know the row sample sizes
-in advance.  There are n1*n2 possible tables that could be produced.  There are two ways to
-calculate the power: estimate the power by simulating the tables under two binomial distributions
-or calculate the exact power by considering all possible tables.  The calculations can be done
-for any test available in exact.test computation or using Fisher's test.
+The power calculations are for binomial models.  The design must know the fixed sample sizes
+in advance.  There are \eqn{(n1+1)*(n2+1)} possible tables that could be produced.  There are two ways to
+calculate the power: simulate the tables under two independent binomial distributions or consider all
+tables and calculate the exact power.  The calculations can be done for any exact.test
+computation or using Fisher's exact test.
 }
 \value{The function returns the computed power.}
 \references{
 Berger, R. (1994) Power comparison of exact unconditional tests for comparing two binomial proportions. 
-Institute of Statistics Mimeo Series No. 2266.
+Institute of Statistics Mimeo Series No. 2266
 
-Berger, R. (1996) More powerful tests from confidence interval p values. American Statistician, 50, 314-318.
+Berger, R. (1996) More powerful tests from confidence interval p values. American Statistician, 50, 314-318
 
 Boschloo, R. D. (1970), Raised Conditional Level of Significance for the 2x2-table
-when Testing the Equality of Two Probabilities. Statistica Neerlandica, 24, 1-35.
+when Testing the Equality of Two Probabilities. Statistica Neerlandica, 24, 1-35
 }
 \author{
 Peter Calhoun
 }
 \note{
-The simulated power calculation is influenced by the power.fisher.test function in statmod.
+For large designs (over 200), I would suggest estimating the power by running a simulation.
+The code takes longer for Boschloo's test.
 }
 
-\section{Warning }{The code has memory issues for total sample sizes greater than 1000.
-For large designs (over 200), I would suggest estimating the power by running a simulation.
-The code takes longer for Boschloo's test.}
+\section{Warning }{The code has memory issues for total sample sizes greater than 1000.}
 
 \seealso{
-\code{\link{statmod}}
+\code{statmod}
 }
 \examples{
 
-power.exact.test(.20,.80,10,20)
-power.exact.test(.20,.80,10,20,method="Fisher")
+power.exact.test(0.20,0.80,10,20)
+power.exact.test(0.20,0.80,10,20,method="Fisher")
 set.seed(218461)
-power.exact.test(.20,.80,10,20,interval=TRUE,method="Boschloo",simulation=TRUE,nsim=100)
+power.exact.test(0.20,0.80,10,20,interval=TRUE,method="Boschloo",simulation=TRUE,nsim=100)
 
 }
 
 \keyword{Power}
+\keyword{Barnard}
+\keyword{Boschloo}
+\keyword{Unconditional}
+\keyword{Exact}

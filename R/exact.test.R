@@ -1,6 +1,6 @@
 
 #Binomial Model:
-binomialCode<-function(data,alternative="less",npNumbers=.01,beta=.001,interval=FALSE,method="Z-pooled",cond.row=TRUE){
+binomialCode<-function(data,alternative="two.sided",npNumbers=0.01,beta=0.001,interval=FALSE,method="Z-pooled",cond.row=TRUE){
 
 #If conditioning on row, then transpose 2x2 table
 if(cond.row){data<-t(data)}
@@ -16,18 +16,20 @@ J<-matrix(0,Cs[1]+1,Cs[2]+1)
 for( j in 1:(Cs[2]+1)){
 	J[,j]<-t(rep(j,1,Cs[1]+1)-1)}
 
+
 #Calculate all the possible test statistics:
 if(tolower(method)=="boschloo"){
-TX<-matrix(0,Cs[1]+1,Cs[2]+1)
-for( k in 1:(Cs[1]+1)){
-for( l in 1:(Cs[2]+1)){
-TX[k,l]<-fisher.test(matrix(c(I[k,l],J[k,l],Cs[1]-I[k,l],Cs[2]-J[k,l]),nrow=2),alternative=alternative)$p.value
-}}}
+poss<-matrix(c(rep(0:Cs[1],Cs[2]+1),Cs[1]-rep(0:Cs[1],Cs[2]+1),rep(0:Cs[2],each=Cs[1]+1),Cs[2]-rep(0:Cs[2],each=Cs[1]+1)),
+(Cs[1]+1)*(Cs[2]+1),4)
 
-if(tolower(method)=="z-pooled"|tolower(method)=="pooled"){
+TX<-matrix(apply(poss,1,FUN=function(tbls){fisher.test(matrix(tbls,2,2),alternative=tolower(alternative),conf.int=F)$p.value}),
+Cs[1]+1,Cs[2]+1)
+}
+
+if(tolower(method) %in% c("z-pooled","pooled","score")){
 TX<-(I/Cs[1]-J/Cs[2])/sqrt(((I+J)/N)*(1-((I+J)/N))*sum(1/Cs))}
 
-if(tolower(method)=="z-unpooled"|tolower(method)=="unpooled"|tolower(method)=="wald"){
+if(tolower(method) %in% c("z-unpooled","unpooled","wald")){
 TX<-(I/Cs[1]-J/Cs[2])/sqrt((J/Cs[2])*(1-J/Cs[2])/Cs[2]+(I/Cs[1])*(1-I/Cs[1])/Cs[1])}
 
 TX[which(is.na(TX))]=0
@@ -71,28 +73,26 @@ return(list)
 }
 
 
-
 #Multinomial Model:
-multinomialCode<-function(data,alternative="less",npNumbers=.01,beta=.001,interval=FALSE,method="Z-pooled"){
+multinomialCode<-function(data,alternative="less",npNumbers=0.01,beta=0.001,interval=FALSE,method="Z-pooled"){
 
 #Function to calculate the test statistic for a given table:
 testStatistic<-function(method,i,j,k,alternative){
 
-if(tolower(method)=="z-pooled"|tolower(method)=="pooled"){
+if(tolower(method) %in% c("z-pooled","pooled","score")){
 TX<-(i/(i+k)-j/(j+(N-i-j-k)))/sqrt((i+j)/N*(1-(i+j)/N)*(1/(i+k)+1/(j+(N-i-j-k))))}
 
 if(tolower(method)=="boschloo"){
 TX<-{}
 for(l in k){
-TX<-c(TX,fisher.test(matrix(c(i,j,l,N-i-j-l),nrow=2),alternative=alternative)$p.value)
+TX<-c(TX,fisher.test(matrix(c(i,j,l,N-i-j-l),nrow=2),alternative=tolower(alternative),conf.int=F)$p.value)
 }}
 
-if(tolower(method)=="z-unpooled"|tolower(method)=="unpooled"|tolower(method)=="wald"){
+if(tolower(method) %in% c("z-unpooled","unpooled","wald")){
 TX<-(i/(i+k)-j/(N-i-k))/sqrt(j/(N-i-k)*(1-j/(N-i-k))/(N-i-k)+i/(i+k)*(1-i/(i+k))/(i+k))}
 
 TX[which(is.na(TX))]=0
 return(TX)}
-
 
 N<-sum(data)
 
@@ -107,14 +107,14 @@ for( i in 0:N){
 for( j in 0:(N-i)){
 TXcrit<-testStatistic(method=method,i,j,0:(N-i-j),alternative=alternative)
 
-if(alternative=="less" || tolower(method)=="boschloo"){k<-which(!is.na(TXcrit)&TXcrit <= TXO)-1
-} else if(alternative=="greater"){k<-which(!is.na(TXcrit)&TXcrit >= TXO)-1
-} else if(alternative=="two.sided"){k<-which(!is.na(TXcrit)&abs(TXcrit) >= abs(TXO))-1}
+if(tolower(alternative)=="less" || tolower(method)=="boschloo"){k<-which(!is.na(TXcrit)&TXcrit <= TXO)-1
+} else if(tolower(alternative)=="greater"){k<-which(!is.na(TXcrit)&TXcrit >= TXO)-1
+} else if(tolower(alternative)=="two.sided"){k<-which(!is.na(TXcrit)&abs(TXcrit) >= abs(TXO))-1}
 
 #Calculate probability even for vector of p2
 if(length(k)>0){
 
-prob<-prob+colSums(factorial(N)/(factorial(i)*factorial(j)*factorial(k)*factorial(N-i-j-k))*p1^(i+j)*
+prob<-prob+colSums(exp(lgamma(N+1)-lgamma(i+1)-lgamma(j+1)-lgamma(k+1)-lgamma(N-i-j-k+1))*p1^(i+j)*
 matrix(rep(p2,each=length(k))^(i+rep(k,length(p2))),length(k),length(p2))*(1-p1)^(N-i-j)*
 matrix((1-rep(p2,each=length(k)))^(N-i-rep(k,length(p2))),length(k),length(p2)))
 }}}
@@ -190,23 +190,24 @@ np1.range=c(min(int1),max(int1)),np2.range=c(min(int2),max(int2)))
 return(list)
 }
 
+
 #Combine Binomial and Multinomial Functions
-exact.test<-function(data,alternative="less",npNumbers=.01,beta=.001,interval=FALSE,method="Z-pooled",model="Binomial"){
+exact.test<-function(data,alternative="two.sided",npNumbers=0.01,beta=0.001,interval=FALSE,method="Z-pooled",model="Binomial",cond.row=TRUE){
 
 if(dim(data)[1]!=2 | dim(data)[2]!=2){stop("Input 2x2 table")};
 if(length(which(data<0))>0){stop("Can't have negative entries")};
 if(length(which(data==0))>2){stop("Can't have more than two 0 entries")};
 if(beta < 0 | beta > 1){stop("Beta must be between 0 and 1")};
-if(npNumbers <= 0 | npNumbers > 1){stop("Increase in nuisance parameters considered must be between 0 and 1")};
+if(npNumbers <= 0 | npNumbers > 1){stop("Increment of nuisance parameter must be between 0 and 1")};
 if(!(tolower(alternative) %in% c("less","two.sided","greater"))){
 stop("Set alternative to 'less', 'two.sided', or 'greater'")}
-if(!(tolower(method) %in% c("z-pooled","pooled","z-unpooled","pooled","boschloo","wald"))){
+if(!(tolower(method) %in% c("z-pooled","pooled","score","z-unpooled","pooled","boschloo","wald"))){
 stop("Set method to 'Z-pooled', 'Z-unpooled', or 'Boschloo'")}
 if(!(tolower(model) %in% c("binomial","multinomial"))){
 stop("Set model to 'Binomial' or 'Multinomial'")}
 
 if(tolower(model)=="binomial"){
-results<-binomialCode(data,alternative=alternative,interval=interval,beta=beta,npNumbers=npNumbers,method=method)
+results<-binomialCode(data,alternative=alternative,interval=interval,beta=beta,npNumbers=npNumbers,method=method,cond.row=cond.row)
 list<-list(model=model,method=results$method,alternative=alternative,p.value=results$p.value,
 	     test.statistic=results$test.statistic,np=results$np,np.range=results$np.range)}
 
@@ -218,6 +219,7 @@ list<-list(model=model,method=results$method,alternative=alternative,p.value=res
 
 return(list)
 }
+
 
 #Power Calculations
 power.exact.test<-function (p1, p2, n1, n2, npNumbers=.01, alpha = 0.05,alternative="two.sided",
@@ -231,7 +233,7 @@ if(beta < 0 | beta > 1){stop("Beta must be between 0 and 1")};
 if(npNumbers <= 0 | npNumbers > 1){stop("Increase in nuisance parameters considered must be between 0 and 1")};
 if(!(tolower(alternative) %in% c("less","two.sided","greater"))){
 stop("Set alternative to 'less', 'two.sided', or 'greater'")}
-if(!(tolower(method) %in% c("z-pooled","pooled","z-unpooled","pooled","boschloo","wald","fisher"))){
+if(!(tolower(method) %in% c("z-pooled","pooled","score","z-unpooled","pooled","boschloo","wald","fisher"))){
 stop("Set method to 'Z-pooled', 'Z-unpooled', 'Boschloo', or 'Fisher'")}
 
 if(!simulation){
@@ -241,7 +243,7 @@ if(!simulation){
     for( j in 0:n2){
     tables <- matrix(c(i,n1-i,j,n2-j),2,2,byrow=T)
     if(tolower(method)=="fisher"){
-    if(fisher.test(tables,alternative=alternative)$p.value<alpha){
+    if(fisher.test(tables,alternative=tolower(alternative),conf.int=F)$p.value<alpha){
     prob[i+1,j+1]<-choose(n1,i)*p1^i*(1-p1)^(n1-i)*choose(n2,j)*p2^j*(1-p2)^(n2-j)}}
     if(tolower(method)!="fisher"){
     if(binomialCode(tables,npNumbers=npNumbers,alternative=alternative,
@@ -257,7 +259,7 @@ if(simulation){
     p.value <- rep(0, nsim)
     for (i in 1:nsim){
     if(tolower(method)=="fisher"){
-    p.value[i] <- fisher.test(matrix(randTables[i,],2,2,byrow=T),alternative=alternative)$p.value}
+    p.value[i] <- fisher.test(matrix(randTables[i,],2,2,byrow=T),alternative=tolower(alternative),conf.int=F)$p.value}
     if(tolower(method)!="fisher"){
     p.value[i] <- binomialCode(matrix(randTables[i,],2,2,byrow=T),npNumbers=npNumbers,alternative=alternative,
 					interval=interval,beta=beta,method=method)$p.value}}
@@ -265,6 +267,3 @@ if(simulation){
 }
 list(power=power,alternative=alternative,method=method)
 }
-
-
-

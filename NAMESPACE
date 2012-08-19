@@ -1,2 +1,2 @@
-export("exact.test")
-export("power.exact.test")
+export(exact.test)
+export(power.exact.test)

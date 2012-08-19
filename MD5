@@ -1,6 +1,6 @@
-3c3bcc5867c3cd075fc4fe071f615b8e *DESCRIPTION
-fd8aa4746901c3d6225795c7fd22c45b *NAMESPACE
-8d35edde00ea269a140a5882642416af *R/exact.test.R
-fd3e5c79817cd183cabeddfd842b6cab *man/Exact-package.Rd
-257041a63bb623ff2fc5ced40a655418 *man/exact.test.Rd
-893f98d56371a5cff972547a4e410f7e *man/power.exact.test.Rd
+44ac4dc2db61b9f321b9351cf115e970 *DESCRIPTION
+98d4c94ea92fca228814c01e4392fba1 *NAMESPACE
+abd75dcd024e8f985d4fa9285cb3d75b *R/exact.test.R
+5d5198a7592baf0511762c37c53933d1 *man/Exact-package.Rd
+6340d9358bb3861c11470f69b7f9f2f6 *man/exact.test.Rd
+c6d68ef18596a4336e9545236dacd26e *man/power.exact.test.Rd
