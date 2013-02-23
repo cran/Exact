@@ -7,25 +7,26 @@ Power calculation for unconditional exact test
 Calculates the power of the design for known sample sizes and true probabilities.
 }
 \usage{
-power.exact.test(p1, p2, n1, n2, npNumbers = 0.01, alpha = 0.05, 
-                 alternative = "two.sided", interval = FALSE, beta = 0.001,
-                 method = "Z-pooled", simulation = FALSE, nsim = 100)
+power.exact.test(p1, p2, n1, n2, npNumbers = 100, alpha = 0.05, 
+                 alternative = "two.sided", interval = FALSE, beta = 0.001, 
+                 method = "Z-pooled", ref.pvalue = TRUE, simulation = FALSE, 
+                 nsim = 100)
 }
 \arguments{
   \item{p1}{
-The probability of the top-left cell in a 2x2 table given n1
+The probability of success given in group 1
 }
   \item{p2}{
-The probability of the bottom-left cell in a 2x2 table given n2
+The probability of success given in group 2
 }
   \item{n1}{
-The first known sample size 
+The sample size in group 1
 }
   \item{n2}{
-The second known sample size
+The sample size in group 2
 }
   \item{npNumbers}{
-Number: Increment for the search in the nuisance parameter
+Number: The number of nuisance parameters considered
 }
   \item{alpha}{
 Significance level
@@ -42,7 +43,10 @@ Only used if interval=TRUE
 }
   \item{method}{
 Indicates the method for finding tables as or more extreme than the observed table:
-must be either "Z-pooled", "Z-unpooled", or "Boschloo"
+must be either "Z-pooled", "Z-unpooled", "Santner and Snell", or "Boschloo"
+}
+  \item{ref.pvalue}{
+Logical: Indicates if p-value should be refined by maximizing the p-value function after the nuisance parameter is selected.
 }
   \item{simulation}{
 Logical: Indicates if the power calculation is exact or estimated by simulation
@@ -68,15 +72,14 @@ Berger, R. (1996) More powerful tests from confidence interval p values. America
 Boschloo, R. D. (1970), Raised Conditional Level of Significance for the 2x2-table
 when Testing the Equality of Two Probabilities. Statistica Neerlandica, 24, 1-35
 }
+
 \author{
 Peter Calhoun
 }
 \note{
-For large designs (over 200), I would suggest estimating the power by running a simulation.
-The code takes longer for Boschloo's test.
+The code takes longer for Boschloo's test.  Not refining the p-value often yields similar
+results and decreases the computation time.
 }
-
-\section{Warning }{The code has memory issues for total sample sizes greater than 1000.}
 
 \seealso{
 \code{statmod}

@@ -2,6 +2,7 @@
 \alias{Exact}
 \alias{MultinomialCode}
 \alias{BinomialCode}
+\alias{fisher.2x2}
 
 \docType{package}
 \title{Unconditional Exact Tests for 2x2 tables}
@@ -12,8 +13,8 @@ for known proportions and sample sizes.}
 \tabular{ll}{
 Package: \tab Exact\cr
 Type: \tab Package\cr
-Version: \tab 1.1\cr
-Date: \tab 2012-08-19\cr
+Version: \tab 1.2\cr
+Date: \tab 2013-02-23\cr
 License: \tab GPL-2 \cr
 }
 Barnard's and Boschloo's test can be used to test the independence of rows and columns in a 2x2 table.
@@ -28,6 +29,12 @@ considering only values of the nuisance parameter that are in a constructed conf
 cases, the interval approach often yields more powerful tests.  All of these tests can be computed in this package for both 
 models, where the appropriate model is based on the design.
 }
+
+\note{
+Thoughout the years I have received help while creating this package. 
+Special thanks goes to Philo Calhoun, Tal Galili, Kamil Erguler, Roger Berger, Karl Hufthammer, and the R community.
+}
+
 \author{
 Peter Calhoun
 
@@ -52,12 +59,14 @@ Cardillo, G. (2009) MyBarnard: a very compact routine for Barnard's exact test o
 
 Galili, T. and Calhoun, P. (2010)
 
-\url{http://www.r-statistics.com/2010/02/barnards-exact-test-a-powerful-alternative-for-fishers-exact-test-implemented-in-r/}
+\url{http://www.r-statistics.com/2010/02/barnards-exact-test-a-powerful-alternative-for-fishers-exact-test-implemented-in-r}
+
+Mehrotra, D., Chan, I., Berger, R. (2003), A Cautionary Note on Exact Unconditional Inference for a Difference Between Two Independent Binomial Proportions.  Biometrics, 59, 441-450
 
 Suissa, S. and Shuster, J. J. (1985), Exact Unconditional Sample Sizes for the 2x2 Binomial Trial,
 Journal of the Royal Statistical Society, Ser. A, 148, 317-327
 
-Trujillo-Ortiz, A., R. Hernandez-Walls, A. Castro-Perez, L. Rodriguez-Cardozo N.A. RamosDelgado and R. Garcia-Sanchez. (2004).
+Trujillo-Ortiz, A., Hernandez-Walls, R., Castro-Perez, A., Rodriguez-Cardozo, L, RamosDelgado, N.A., Garcia-Sanchez, R. (2004).
 Barnardextest:Barnard's Exact Probability Test. A MATLAB file. [WWW document]
 \url{http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6198}
 

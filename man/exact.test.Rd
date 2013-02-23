@@ -5,8 +5,9 @@
 Calculates Barnard's or Boschloo's unconditional exact test for binomial or multinomial models
 }
 \usage{
-exact.test(data, alternative = "two.sided", npNumbers = 0.01, beta = 0.001, interval = FALSE,
-           method = "Z-pooled", model = "Binomial",cond.row = TRUE)
+exact.test(data, alternative = "two.sided", npNumbers = 100, beta = 0.001,
+           interval = FALSE, method = "Z-pooled", model = "Binomial", 
+           cond.row = TRUE, to.plot = TRUE, ref.pvalue=TRUE)
 }
 \arguments{
   \item{data}{
@@ -16,7 +17,7 @@ A two dimensional contingency table in matrix form
 Indicates the alternative hypothesis: must be either "less", "two.sided", or "greater"
 }
   \item{npNumbers}{
-Number: Increment for the search in the nuisance parameter
+Number: The number of nuisance parameters considered
 }
   \item{beta}{
 Number: Confidence level for constructing the interval of nuisance parameters considered.
@@ -27,13 +28,19 @@ Logical: Indicates if a confidence interval on the nuisance parameter should be 
 }
   \item{method}{
 Indicates the method for finding tables as or more extreme than the observed table:
-must be either "Z-pooled", "Z-unpooled", or "Boschloo"
+must be either "Z-pooled", "Z-unpooled", "Santner and Snell", or "Boschloo"
 }
   \item{model}{
 The model being used: must be either "Binomial" or "Multinomial"
 }
   \item{cond.row}{
 Logical: Indicates if row margins are fixed in the binomial models.  Only used if model="Binomial"
+}
+  \item{to.plot}{
+Logical: Indicates if plot of p-value vs nuisance parameter should be generated.  Only used if model="Binomial"
+}
+  \item{ref.pvalue}{
+Logical: Indicates if p-value should be refined by maximizing the p-value function after the nuisance parameter is selected.  Only used if model="Binomial"
 }
 }
 \details{
@@ -43,13 +50,13 @@ Conditional tests have both row and column margins fixed.  Fisher's test conditi
 nuisance parameter.  Barnard's test considers all possible values for the nuisance parameter and chooses the one 
 that maximizes the p-value.
 
-There are several statistics used to define tables as more extreme than the observed table.
+There are several statistics used to define tables as or more extreme than the observed table.
 The method variable lets the user choose the test statistic being used.
 
 The null hypothesis is that the rows and columns are independent.  Under the binomial model, the user will need to input which margin is 
-fixed (default is rows).  The null hypothesis can be interpreted as the probability of the top-left cell given the object is in the first 
-fixed group is equal to the probability of the bottom-left cell given the object is in the second fixed group. There are many ways 
-to define the two.sided p-value; this code uses the fisher.test approach by summing the probabilities for both sides of the table.
+fixed (default is rows).  The null hypothesis can be interpreted as the probability of success given in the first group is equal to the probability 
+of success given in the second group. There are many ways to define the two.sided p-value; this code uses the fisher.test() approach by summing the 
+probabilities for both sides of the table.
 }
 \value{
 \item{p.value}{The computed p-value}
@@ -58,7 +65,6 @@ to define the two.sided p-value; this code uses the fisher.test approach by summ
 are given}
 \item{np.range}{The range of nuisance parameters considered.  For multinomial models, both nuisance parameter
 ranges are given}
-
 }
 \references{
 This code was influenced by the FORTRAN program located at \url{www.stat.ncsu.edu/exact}
@@ -68,23 +74,24 @@ Peter Calhoun
 }
 \note{
 Multinomial models are much more computationally intensive due to more tables considered and maximizing over two 
-nuisance parameters.  Boschloo's test also takes longer due to calculating Fisher's p-value for every possible table. 
-I suggest keeping the sample sizes small unless user does not mind waiting.
+nuisance parameters.  I also have spent a greater amount of time making the computations for the binomial models more efficient;
+future work will be devoted to improving the multinomial models.  Boschloo's test also takes longer due to
+calculating Fisher's p-value for every possible table; however, a created function that calculates Fisher's test efficiently
+is utilized. Increasing the number of nuisance parameters considered and refining the p-value will increase the computation time.
 }
 
-\section{Warning}{Binomial models tend to have memory issues for sample sizes greater than 1000.
-Multinomial models may take a very long time, even for sample sizes less than 100.}
+\section{Warning}{Multinomial models may take a very long time, even for sample sizes less than 100.}
 
 \seealso{
 \code{\link{fisher.test}}, \code{Barnard}, and \code{exact2x2}
 }
-
-
 \examples{
 data<-matrix(c(7,8,12,3),2,2,byrow=TRUE)
-exact.test(data,alternative="less")
-exact.test(data,alternative="two.sided",interval=TRUE,beta=0.001,npNumbers=0.001,method="Z-pooled")
-exact.test(data,alternative="two.sided",interval=TRUE,beta=0.001,npNumbers=0.01,method="Boschloo")
+exact.test(data,alternative="less",to.plot=TRUE)
+exact.test(data,alternative="two.sided",interval=TRUE,beta=0.001,npNumbers=100,method="Z-pooled",
+           to.plot=FALSE)
+exact.test(data,alternative="two.sided",interval=TRUE,beta=0.001,npNumbers=100,method="Boschloo",
+           to.plot=FALSE)
 
 data<-matrix(c(6,8,4,3),2,2,byrow=TRUE)
 exact.test(data,model="Multinomial",alternative="less",method="Z-pooled")
