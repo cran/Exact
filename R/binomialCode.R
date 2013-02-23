@@ -4,7 +4,7 @@ function(data,alternative="two.sided",npNumbers=100,beta=0.001,interval=FALSE,me
 #If conditioning on row, then transpose 2x2 table
 if(cond.row){data<-t(data)}
 
-Ns<-.colSums(data,2,2)
+Ns<-colSums(data,dims=1)
 N<-sum(Ns)
 
 #Specify nuisance parameter range
@@ -85,7 +85,7 @@ cellnr<-rep.int(y.unique+1, npNumbers)+ynr*rep(seq(npNumbers)-1, each=lyu)
 B[cellnr]<-dbinom(rep.int(y.unique, npNumbers), Ns[2], rep(int, each=lyu))
 
 prob<-A[xTbls+1,]*B[yTbls+1,]
-prob<-.colSums(prob, nTbls, npNumbers)
+prob<-colSums(prob, dims=1)
 
 np<-int[which(prob==max(prob))]
 pvalue<-max(prob)+beta

@@ -13,7 +13,7 @@ for known proportions and sample sizes.}
 \tabular{ll}{
 Package: \tab Exact\cr
 Type: \tab Package\cr
-Version: \tab 1.2\cr
+Version: \tab 1.3\cr
 Date: \tab 2013-02-23\cr
 License: \tab GPL-2 \cr
 }
