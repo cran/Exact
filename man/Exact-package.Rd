@@ -5,29 +5,36 @@
 \alias{fisher.2x2}
 
 \docType{package}
-\title{Unconditional Exact Tests for 2x2 tables}
-\description{Uses Barnard's or Boschloo's test to compute the p-value of a given 2x2 table or calculate the power
-for known proportions and sample sizes.}
+\title{
+Unconditional Exact Tests for 2x2 Tables
+}
+\description{This package implements the \code{exact.test} function to perform unconditional exact tests.  This package also
+includes the \code{power.exact.test} function to calculate the power to detect a significant difference using unconditional exact
+tests.}
 
 \details{
 \tabular{ll}{
 Package: \tab Exact\cr
 Type: \tab Package\cr
-Version: \tab 1.3\cr
-Date: \tab 2013-02-23\cr
+Version: \tab 1.4\cr
+Date: \tab 2013-07-21\cr
 License: \tab GPL-2 \cr
 }
-Barnard's and Boschloo's test can be used to test the independence of rows and columns in a 2x2 table.
-Unconditional tests are often more powerful than conditional tests, but require more computation time.
-P-values can be computed for 2x2 tables under the binomial and multinomial models using multiple different 
-statistics and using an interval method.  Power calculations can be done for known sample sizes and proportions. 
-There are several different methods for finding as or more extreme tables than the one observed.  
-Suissa and Shuster suggested using a Z-pooled statistic, which they showed is uniformly more powerful than Fisher's test 
+Unconditional exact tests can be performed to test the independence of rows and columns in a 2x2 table.
+Unconditional tests (such as Barnard's and Boschloo's exact tests) are more powerful alternatives than conditional tests (such as Fisher's exact test).
+P-values can be computed for 2x2 tables under the binomial and multinomial models using various test statistics 
+to find the 'as or more extreme' tables.  The multinomial model assumes only the total sample size is known in advance (common in cross-sectional studies),
+the binomial model assumes only the row or column margins (but not both) are fixed (most common situation; occurs in case-control studies), and 
+the hypergeometric model assumes both row and column margins are fixed (very unlikely situation; only design where Fisher's test should be performed).
+
+
+The details of the test statistics are given in the \code{exact.test} function description.
+Suissa and Shuster suggested using a Z-pooled statistic, which they found to be uniformly more powerful than Fisher's test 
 for balanced designs.  Boschloo recommended using the p-value for Fisher's test as the test statistic.  This method became 
-known as Boschloo's test, which is always uniformly more powerful than Fisher's test.  In addition, Berger and Boos proposed 
-considering only values of the nuisance parameter that are in a constructed confidence interval.  They showed that for many 
-cases, the interval approach often yields more powerful tests.  All of these tests can be computed in this package for both 
-models, where the appropriate model is based on the design.
+known as Boschloo's test, and it is always uniformly more powerful than Fisher's test.  Mato and Andres suggested using Barnard's CSM test.
+Additionally, Berger and Boos proposed considering only values of the nuisance parameter that are in a constructed confidence interval.
+The interval approach often yields more powerful tests.  While there is still a disagreement on which test statistic to use, most researchers agree
+that Fisher's exact test should \emph{not} be used to analyze 2x2 tables.  All of these tests can be computed in this package.
 }
 
 \note{
@@ -40,6 +47,7 @@ Peter Calhoun
 
 Maintainer: Peter Calhoun <calhoun.peter@gmail.com>
 }
+
 \references{
 Barnard, G.A. (1945) A new test for 2x2 tables. Nature, 156:177
 
@@ -61,7 +69,11 @@ Galili, T. and Calhoun, P. (2010)
 
 \url{http://www.r-statistics.com/2010/02/barnards-exact-test-a-powerful-alternative-for-fishers-exact-test-implemented-in-r}
 
+Mato, S. and Andres, M. (1997), Simplifying the calculation of the P-value for Barnard's test and its derivatives.  Statistics and Computing, 7, 137-143
+
 Mehrotra, D., Chan, I., Berger, R. (2003), A Cautionary Note on Exact Unconditional Inference for a Difference Between Two Independent Binomial Proportions.  Biometrics, 59, 441-450
+
+Ruxton, G. D. and Neuhauser M (2010), Good practice in testing for an association in contingency tables. Behavioral Ecology and Sociobiology, 64, 1505-1513
 
 Suissa, S. and Shuster, J. J. (1985), Exact Unconditional Sample Sizes for the 2x2 Binomial Trial,
 Journal of the Royal Statistical Society, Ser. A, 148, 317-327

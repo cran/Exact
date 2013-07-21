@@ -43,10 +43,10 @@ Only used if interval=TRUE
 }
   \item{method}{
 Indicates the method for finding tables as or more extreme than the observed table:
-must be either "Z-pooled", "Z-unpooled", "Santner and Snell", or "Boschloo"
+must be either "Z-pooled", "Z-unpooled", "Santner and Snell", "Boschloo", "CSM", "CSM modified", or "CSM approximate"
 }
   \item{ref.pvalue}{
-Logical: Indicates if p-value should be refined by maximizing the p-value function after the nuisance parameter is selected.
+Logical: Indicates if p-value should be refined by maximizing the p-value function after the nuisance parameter is selected
 }
   \item{simulation}{
 Logical: Indicates if the power calculation is exact or estimated by simulation
@@ -55,11 +55,12 @@ Logical: Indicates if the power calculation is exact or estimated by simulation
 Number of simulations run.  Only used if simulation=TRUE
 }
 }
+
 \details{
 The power calculations are for binomial models.  The design must know the fixed sample sizes
-in advance.  There are \eqn{(n1+1)*(n2+1)} possible tables that could be produced.  There are two ways to
-calculate the power: simulate the tables under two independent binomial distributions or consider all
-tables and calculate the exact power.  The calculations can be done for any exact.test
+in advance.  There are \eqn{(n_1+1) \times (n_2+1)} possible tables that could be produced.  There are two ways to
+calculate the power: simulate the tables under two independent binomial distributions or consider all possible
+tables and calculate the exact power.  The calculations can be done for any \code{exact.test}
 computation or using Fisher's exact test.
 }
 \value{The function returns the computed power.}
@@ -72,17 +73,16 @@ Berger, R. (1996) More powerful tests from confidence interval p values. America
 Boschloo, R. D. (1970), Raised Conditional Level of Significance for the 2x2-table
 when Testing the Equality of Two Probabilities. Statistica Neerlandica, 24, 1-35
 }
-
 \author{
 Peter Calhoun
 }
 \note{
-The code takes longer for Boschloo's test.  Not refining the p-value often yields similar
+The code takes a very long time for the CSM test.  Not refining the p-value often yields similar
 results and decreases the computation time.
 }
 
 \seealso{
-\code{statmod}
+\pkg{statmod}
 }
 \examples{
 

@@ -20,15 +20,15 @@ Indicates the alternative hypothesis: must be either "less", "two.sided", or "gr
 Number: The number of nuisance parameters considered
 }
   \item{beta}{
-Number: Confidence level for constructing the interval of nuisance parameters considered.
-Only used if interval=TRUE
+Number: Confidence level for constructing the interval of nuisance parameters considered.  Only used if interval=TRUE
 }
   \item{interval}{
 Logical: Indicates if a confidence interval on the nuisance parameter should be computed
 }
   \item{method}{
 Indicates the method for finding tables as or more extreme than the observed table:
-must be either "Z-pooled", "Z-unpooled", "Santner and Snell", or "Boschloo"
+must be either "Z-pooled", "Z-unpooled", "Santner and Snell", "Boschloo", "CSM", "CSM modified", or "CSM approximate".
+CSM tests cannot be calculated for multinomial models
 }
   \item{model}{
 The model being used: must be either "Binomial" or "Multinomial"
@@ -37,7 +37,7 @@ The model being used: must be either "Binomial" or "Multinomial"
 Logical: Indicates if row margins are fixed in the binomial models.  Only used if model="Binomial"
 }
   \item{to.plot}{
-Logical: Indicates if plot of p-value vs nuisance parameter should be generated.  Only used if model="Binomial"
+Logical: Indicates if plot of p-value vs. nuisance parameter should be generated.  Only used if model="Binomial"
 }
   \item{ref.pvalue}{
 Logical: Indicates if p-value should be refined by maximizing the p-value function after the nuisance parameter is selected.  Only used if model="Binomial"
@@ -45,17 +45,69 @@ Logical: Indicates if p-value should be refined by maximizing the p-value functi
 }
 \details{
 Unconditional exact tests can be used for binomial or multinomial models.  The binomial model assumes the row 
-or column margins (but not both) are known in advance, while the multinomial model only assumes the total sample size is known beforehand.  
-Conditional tests have both row and column margins fixed.  Fisher's test conditions on both margins to avoid estimating a 
-nuisance parameter.  Barnard's test considers all possible values for the nuisance parameter and chooses the one 
-that maximizes the p-value.
+or column margins (but not both) are known in advance, while the multinomial model assumes only the total sample size is known beforehand.  
+Conditional tests have both row and column margins fixed.  The null hypothesis is that the rows and columns are independent.
+Under the binomial model, the user will need to input which margin is fixed (default is rows).
+\eqn{\vspace{3 mm}}
 
-There are several statistics used to define tables as or more extreme than the observed table.
-The method variable lets the user choose the test statistic being used.
+Let \eqn{X} denote a generic 2x2 table with fixed sample sizes \eqn{n_1} and \eqn{n_2}, \eqn{X_0} denote the
+observed table, and \eqn{T(X)} represent the test statistic function.  The null hypothesis can be written as \eqn{p_1=p_2 \equiv p}.
+The p-value function with rows fixed is the product of two independent binomials:
 
-The null hypothesis is that the rows and columns are independent.  Under the binomial model, the user will need to input which margin is 
-fixed (default is rows).  The null hypothesis can be interpreted as the probability of success given in the first group is equal to the probability 
-of success given in the second group. There are many ways to define the two.sided p-value; this code uses the fisher.test() approach by summing the 
+\deqn{P(X|p)= \sup_{0 \leq p \leq 1} \sum_{T(X) \geq T(X_0)} {n_1 \choose x_{11}} {n_2 \choose x_{21}} p^{x_{11}+x_{21}} (1-p)^{x_{12}+x_{13}}}
+
+The multinomial model is similar except the summand has a multinomial distribution with two nuisance parameters.
+\eqn{\vspace{3 mm}}
+
+There are several possible test statistics to determine the 'as or more extreme' tables seen in the index of summation.
+The \code{method} variable lets the user choose the test statistic being used.  A brief description for each test statistic is given below (see References for more details):
+\eqn{\vspace{3 mm}}
+
+Let \eqn{\hat{p_1}=x_{11}/n_1}, \eqn{\hat{p_2}=x_{21}/n_2}, and \eqn{\hat{p}=(x_{11}+x_{21})/(n_1+n_2)}.
+\eqn{\vspace{3 mm}}
+
+Z-unpooled (or Wald):
+\deqn{Z_u(x_{11},x_{21})=\frac{\hat{p_2}-\hat{p_1}}{\sqrt{\frac{\hat{p_1}(1-\hat{p_1})}{n_1}+\frac{\hat{p_2}(1-\hat{p_2})}{n_2}}}}
+
+Z-pooled (or Score):
+\deqn{Z_p(x_{11},x_{21})=\frac{\hat{p_2}-\hat{p_1}}{\sqrt{\frac{\hat{p}(1-\hat{p})}{n_1}+\frac{\hat{p}(1-\hat{p})}{n_2}}}}
+
+Santner and Snell:
+\deqn{D(x_{11},x_{21})=\hat{p_2}-\hat{p_1}}
+
+Boschloo:
+
+Uses the p-value from Fisher's exact test as the test statistic.
+\eqn{\vspace{3 mm}}
+
+CSM:
+
+Starts with the most extreme table and adds other 'as or more extreme' tables one step at a time
+by maximizing the summand of the p-value function.  This approach can be computationally intensive.
+\eqn{\vspace{0 mm}}
+
+CSM modified:
+
+Starts with all tables that must be more extreme and adds other 'as or more extreme' tables one step at a time
+by maximizing the summand of the p-value function.  This approach can be computationally intensive.
+\eqn{\vspace{3 mm}}
+
+CSM approximate:
+
+Maximizes the summand of the p-value function for each possible table.  Thus, the test statistic is the p-value function without the summation.
+This approach is less computationally intensive than the CSM test because the maximization is not repeated at each step. 
+\eqn{\vspace{3 mm}}
+
+The supremum of the common success probability is taken over all values between 0 and 1.  Another approach, proposed by Berger and Boos, is
+to take the supremum over a Clopper-Pearson confidence interval.  This approach adds a small penalty to the p-value to ensure a level-\eqn{\alpha} test,
+but eliminates unlikely probabilities from inflating the p-value.  The p-value function becomes:
+
+\deqn{P(X|p)= \left(\sup_{p \in C_\beta} \sum_{T(X) \geq T(X_0)} {n_1 \choose x_{11}} {n_2 \choose x_{21}} p^{x_{11}+x_{21}} (1-p)^{x_{12}+x_{13}}\right) + \beta }
+
+where \eqn{C_\beta} is the \eqn{100(1-\beta)\%} confidence interval of \eqn{p}
+\eqn{\vspace{3 mm}}
+
+There are many ways to define the two-sided p-value; this code uses the \code{fisher.test()} approach by summing the 
 probabilities for both sides of the table.
 }
 \value{
@@ -73,17 +125,15 @@ This code was influenced by the FORTRAN program located at \url{www.stat.ncsu.ed
 Peter Calhoun
 }
 \note{
-Multinomial models are much more computationally intensive due to more tables considered and maximizing over two 
-nuisance parameters.  I also have spent a greater amount of time making the computations for the binomial models more efficient;
-future work will be devoted to improving the multinomial models.  Boschloo's test also takes longer due to
-calculating Fisher's p-value for every possible table; however, a created function that calculates Fisher's test efficiently
-is utilized. Increasing the number of nuisance parameters considered and refining the p-value will increase the computation time.
+CSM test and multinomial models are much more computationally intensive.  I have also spent a greater amount of time making the
+computations for the binomial models more efficient; future work will be devoted to improving the multinomial models.
+Boschloo's test also takes longer due to calculating Fisher's p-value for every possible table; however, a created function that
+calculates Fisher's test efficiently is utilized. Increasing the number of nuisance parameters considered and refining the p-value
+will increase the computation time.
 }
-
-\section{Warning}{Multinomial models may take a very long time, even for sample sizes less than 100.}
-
+\section{Warning}{Multinomial models and CSM tests may take a very long time, even for sample sizes less than 100.}
 \seealso{
-\code{\link{fisher.test}}, \code{Barnard}, and \code{exact2x2}
+\code{\link{fisher.test}}, \pkg{Barnard}, and \pkg{exact2x2}
 }
 \examples{
 data<-matrix(c(7,8,12,3),2,2,byrow=TRUE)
