@@ -16,8 +16,8 @@ tests.}
 \tabular{ll}{
 Package: \tab Exact\cr
 Type: \tab Package\cr
-Version: \tab 1.4\cr
-Date: \tab 2013-07-21\cr
+Version: \tab 1.5\cr
+Date: \tab 2015-03-27\cr
 License: \tab GPL-2 \cr
 }
 Unconditional exact tests can be performed to test the independence of rows and columns in a 2x2 table.
@@ -63,11 +63,7 @@ Boschloo, R. D. (1970), Raised Conditional Level of Significance for the 2x2-tab
 when Testing the Equality of Two Probabilities. Statistica Neerlandica, 24, 1-35
 
 Cardillo, G. (2009) MyBarnard: a very compact routine for Barnard's exact test on 2x2 matrix.
-\url{http://www.mathworks.com/matlabcentral/fileexchange/25760}
-
-Galili, T. and Calhoun, P. (2010)
-
-\url{http://www.r-statistics.com/2010/02/barnards-exact-test-a-powerful-alternative-for-fishers-exact-test-implemented-in-r}
+\url{http://www.mathworks.com/matlabcentral/fileexchange/25760-mybarnard}
 
 Mato, S. and Andres, M. (1997), Simplifying the calculation of the P-value for Barnard's test and its derivatives.  Statistics and Computing, 7, 137-143
 
@@ -80,6 +76,6 @@ Journal of the Royal Statistical Society, Ser. A, 148, 317-327
 
 Trujillo-Ortiz, A., Hernandez-Walls, R., Castro-Perez, A., Rodriguez-Cardozo, L, RamosDelgado, N.A., Garcia-Sanchez, R. (2004).
 Barnardextest:Barnard's Exact Probability Test. A MATLAB file. [WWW document]
-\url{http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6198}
+\url{http://www.mathworks.com/matlabcentral/fileexchange/6198-barnardextest}
 
 }

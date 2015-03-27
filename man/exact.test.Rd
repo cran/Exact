@@ -119,13 +119,13 @@ are given}
 ranges are given}
 }
 \references{
-This code was influenced by the FORTRAN program located at \url{www.stat.ncsu.edu/exact}
+This code was influenced by the FORTRAN program located at \url{http://www4.stat.ncsu.edu/~boos/exact/}
 }
 \author{
 Peter Calhoun
 }
 \note{
-CSM test and multinomial models are much more computationally intensive.  I have also spent a greater amount of time making the
+See formulas in link: \url{http://cran.r-project.org/web/packages/Exact/Exact.pdf}.  CSM test and multinomial models are much more computationally intensive.  I have also spent a greater amount of time making the
 computations for the binomial models more efficient; future work will be devoted to improving the multinomial models.
 Boschloo's test also takes longer due to calculating Fisher's p-value for every possible table; however, a created function that
 calculates Fisher's test efficiently is utilized. Increasing the number of nuisance parameters considered and refining the p-value
@@ -143,8 +143,13 @@ exact.test(data,alternative="two.sided",interval=TRUE,beta=0.001,npNumbers=100,m
 exact.test(data,alternative="two.sided",interval=TRUE,beta=0.001,npNumbers=100,method="Boschloo",
            to.plot=FALSE)
 
+#Example from Barnard's (1947) appendix:
+data<-matrix(c(4,0,3,7),2,2,dimnames=list(c("Box 1","Box 2"),c("Defective","Not Defective")))
+exact.test(data,method="CSM",alternative="two.sided")
+
 data<-matrix(c(6,8,4,3),2,2,byrow=TRUE)
 exact.test(data,model="Multinomial",alternative="less",method="Z-pooled")
+
 }
 
 \keyword{Barnard}
