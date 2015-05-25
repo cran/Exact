@@ -16,8 +16,8 @@ tests.}
 \tabular{ll}{
 Package: \tab Exact\cr
 Type: \tab Package\cr
-Version: \tab 1.5\cr
-Date: \tab 2015-03-27\cr
+Version: \tab 1.6\cr
+Date: \tab 2015-05-25\cr
 License: \tab GPL-2 \cr
 }
 Unconditional exact tests can be performed to test the independence of rows and columns in a 2x2 table.

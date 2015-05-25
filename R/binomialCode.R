@@ -147,12 +147,12 @@ binomialCode <-function(data,alternative="two.sided",npNumbers=100,beta=.001,int
     }
     TXO=NA
     
+    if(is.null(Tbls)){Tbls<-matrix(data[1,],ncol=2)}
+    
     if(tolower(alternative)=="two.sided"){
       Tbls<-rbind(Tbls,matrix(c(Ns[1]-Tbls[,1],Ns[2]-Tbls[,2]),dim(Tbls)[1],2))
       if(any(duplicated(Tbls))){Tbls<-matrix(Tbls[-which(duplicated(Tbls)),],ncol=2)}
     }
-    
-    if(is.null(Tbls)){Tbls<-matrix(data[1,],ncol=2)}
     
     while(sum(apply(Tbls, 1, function(x) all(x == data[1,])))==FALSE){
       
@@ -174,6 +174,7 @@ binomialCode <-function(data,alternative="two.sided",npNumbers=100,beta=.001,int
       if(!is.null(add)){
         if(tolower(alternative)=="two.sided"){
           Tbls<-rbind(Tbls,add,matrix(c(Ns[1]-add[,1],Ns[2]-add[,2]),length(addRow),2))
+          if(any(duplicated(Tbls))){Tbls<-matrix(Tbls[-which(duplicated(Tbls)),],ncol=2)}
         } else {
           Tbls<-rbind(Tbls,add)
         }

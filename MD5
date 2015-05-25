@@ -1,10 +1,10 @@
-61179b43b0acf6440f627b2c7d66e495 *DESCRIPTION
+902efc3b87de3482f7abf1bc97df9882 *DESCRIPTION
 98d4c94ea92fca228814c01e4392fba1 *NAMESPACE
-09f068794ebbbef91f814291d8afac2a *R/binomialCode.R
+0204784eec4b7fbae42b82e37e2dbc79 *R/binomialCode.R
 4e59c3b7e32bca54ab66df6e03bd1066 *R/exact.test.R
 44b9ac339bdf5e0454138d111b57985f *R/fisher.2x2.R
 b3aadf9cc16e40af72553123f42a56d7 *R/multinomialCode.R
 924ff35108f34fcebd639db6ac864c7f *R/power.exact.test.R
-07c2751ef650fee9ee09c47156f64159 *man/Exact-package.Rd
+a3d7a46b89c7f273616caf81b8b254a2 *man/Exact-package.Rd
 be533f8928e19533d5f718348b693de5 *man/exact.test.Rd
 10137fc5a219f10e550a0a6ffb3a0a41 *man/power.exact.test.Rd
