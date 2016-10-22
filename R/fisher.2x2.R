@@ -1,9 +1,10 @@
-fisher.2x2<-function(x, alternative="two.sided"){
+fisher.2x2 <-
+function(x, alternative){
   m <- sum(x[, 1])
   n <- sum(x[, 2])
   k <- sum(x[1, ])
   x <- x[1, 1]
-  PVAL <- switch(alternative,less = phyper(x, m, n, k),
+  PVAL <- switch(alternative, less = phyper(x, m, n, k),
                  greater = phyper(x - 1, m, n, k, lower.tail = FALSE),
                  two.sided = {
                    relErr <- 1 + 10^(-7)
@@ -15,5 +16,5 @@ fisher.2x2<-function(x, alternative="two.sided"){
                    d <- d/sum(d)
                    sum(d[d <= d[x - lo + 1] * relErr])
                  })
-  PVAL
+  return(PVAL)
 }
