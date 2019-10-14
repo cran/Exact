@@ -1,5 +1,5 @@
 multinomialCode <-
-function(data, alternative, npNumbers, beta, interval, method){
+function(data, alternative, npNumbers, np.interval, beta, method){
   
   #Function to calculate the test statistic for a given table:
   testStatistic <- function(method, i, j, k, alternative){
@@ -44,8 +44,8 @@ function(data, alternative, npNumbers, beta, interval, method){
         #Calculate probability even for vector of p2
         if(length(k) > 0){
           prob <- prob + colSums(exp(lgamma(N+1)-lgamma(i+1)-lgamma(j+1)-lgamma(k+1)-lgamma(N-i-j-k+1))*p1^(i+j)*
-                                 matrix(rep(p2,each=length(k))^(i+rep(k,length(p2))),length(k),length(p2))*(1-p1)^(N-i-j)*
-                                 matrix((1-rep(p2,each=length(k)))^(N-i-rep(k,length(p2))),length(k),length(p2)))
+                                   matrix(rep(p2,each=length(k))^(i+rep(k,length(p2))),length(k),length(p2))*(1-p1)^(N-i-j)*
+                                   matrix((1-rep(p2,each=length(k)))^(N-i-rep(k,length(p2))),length(k),length(p2)))
         }
       }
     }
@@ -53,7 +53,7 @@ function(data, alternative, npNumbers, beta, interval, method){
   }
   
   #Specify nuisance parameter range
-  if(interval){
+  if (np.interval) {
     tempInt1 <- binom.CI(sum(data[1,]), N, conf.level=1-beta)
     int1 <- seq(max(c(0.00001, tempInt1[1])),min(c(0.99999, tempInt1[2])), length=npNumbers)
     tempInt2 <- binom.CI(sum(data[,1]), N, conf.level=1-beta)
@@ -81,5 +81,5 @@ function(data, alternative, npNumbers, beta, interval, method){
   }
   
   return(list(method=method, p.value=max(pvalue), test.statistic=TXO, np1=np1, np2=np2,
-             np1.range=c(min(int1),max(int1)), np2.range=c(min(int2), max(int2))))
+              np1.range=c(min(int1),max(int1)), np2.range=c(min(int2), max(int2))))
 }

@@ -1,31 +1,23 @@
 maxPvalue <-
-function(tbls, Ns, npNumbers, int, beta){
-  #Instead of calculating the binomial probabilities several times for a more extreme cell,
-  #calculate the probability once and then combine with other more extreme cells:
-  xTbls <- tbls[,1]
-  yTbls <- tbls[,2]
-  nTbls <- length(xTbls) # Number of 'as or more extreme' tables
+function(Mat, Ns, int, beta, delta){
+  Mat[is.na(Mat)] <- 0
+  index <- 1
+  prob <- rep(NA, length(int))
   
-  x.unique <- unique(xTbls)
-  y.unique <- unique(yTbls)
-  lxu <- length(x.unique)
-  lyu <- length(y.unique)
+  # Instead of calculating all binomials, just calculate the binomials that are needed
+  Tbls <- which(Mat==1, arr.ind = TRUE) - 1
+  maxX1 <- max(Tbls[ , 1])  #Always have upper triangle, so minX1 is always 0
+  minX2 <- min(Tbls[ , 2])  #Always have upper triangle, so maxX2 is always Ns[2]
   
-  xnr <- max(xTbls)+1
-  A <- matrix(nrow=xnr, ncol=npNumbers)
-  cellnr <- rep.int(x.unique+1, npNumbers)+xnr*rep(seq(npNumbers)-1, each=lxu)
-  A[cellnr] <- dbinom(rep.int(x.unique, npNumbers), Ns[1], rep(int, each=lxu))
+  for (probVal in int) {
+    #prob[index] <- sum(dbinom(0:Ns[1], Ns[1], probVal)*(Mat %*% dbinom(0:Ns[2], Ns[2], probVal)))
+    prob[index] <- suppressWarnings(sum(dbinom(0:maxX1, Ns[1], probVal+delta)*(Mat[1:(maxX1+1), (minX2+1):(Ns[2]+1), drop=FALSE] %*% dbinom(minX2:Ns[2], Ns[2], probVal))))
+    index <- index + 1
+  }
+  prob <- signif(prob, 12) #Remove rounding errors
   
-  ynr <- max(yTbls)+1
-  B <- matrix(nrow=ynr, ncol=npNumbers)
-  cellnr <- rep.int(y.unique+1, npNumbers)+ynr*rep(seq(npNumbers)-1, each=lyu)
-  B[cellnr] <- dbinom(rep.int(y.unique, npNumbers), Ns[2], rep(int, each=lyu))
-  
-  prob <- matrix(A[xTbls+1,]*B[yTbls+1,], ncol=length(int))
-  prob <- colSums(prob, nTbls)
-  
-  np <- int[which(prob==max(prob))]
-  pvalue <- max(prob) + beta
+  np <- int[which(prob==max(prob, na.rm=TRUE))]
+  pvalue <- max(prob, na.rm=TRUE) + beta
   
   return(list(prob=prob, pvalue=pvalue, np=np))
 }
