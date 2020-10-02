@@ -1,7 +1,19 @@
 \name{NEWS}
 \title{NEWS file for the Exact package}
 
-\section{Changes in Version 2.0 (2019-09-08)}{
+\section{Changes in Version 2.1 (2020-10-01)}{
+  \itemize{
+    
+    \item{Fixed non-inferiority (equivalence) tests and confidence interval calculations.  Code can now perform these tests and CIs for all methods}
+
+    \item{Added tsmethod parameter.  This allows user to perform a two-sided test by either squaring the statistic (default; previous versions), or by performing one-sided test and doubling the p-value}
+    
+    \item{Removed precision parameter and use rootSolve R package to determine confidence interval}
+  }
+}
+
+
+\section{Changes in Version 2.0 (2019-10-14)}{
   \itemize{
     
     \item{Added \code{exact.reject.region} function}

@@ -1,11 +1,12 @@
 moreExtremeCSM <-
-function(data, Ns, alternative, int, delta, reject.alpha){
+function(data, Ns, alternative, int, doublePvalue, delta, reject.alpha){
   
   # There are cases where maxPvalue is faster than using the lookup tables in maxPvalueLookup
   lookupArray <- dbinomCalc(Ns, int, delta)
   
   # Initialize first extreme table and considered tables:
-  moreExtremeMat <- matrix(NA, Ns[1]+1, Ns[2]+1, dimnames=list(0:Ns[1], 0:Ns[2]))
+  moreExtremeMat <- prevMoreExtremeMat <- matrix(NA, Ns[1]+1, Ns[2]+1, dimnames=list(0:Ns[1], 0:Ns[2]))
+  
   moreExtremeMat[1, Ns[2]+1] <- 1
   # Faster to search for 0's than NA's
   moreExtremeMat[1, Ns[2]] <- 0
@@ -15,6 +16,7 @@ function(data, Ns, alternative, int, delta, reject.alpha){
   # If two.sided and delta != 0, then opposite side must be a candidate to be picked
   if (alternative == "two.sided") { moreExtremeMat[Ns[1]+1, 1] <- (delta == 0) }
   
+  # If data is the most extreme table then simply return most extreme table
   if (!is.null(data)) {
     addRow <- which(moreExtremeMat == 1, arr.ind = TRUE)
     for (j in 1:nrow(addRow)) {
@@ -25,14 +27,15 @@ function(data, Ns, alternative, int, delta, reject.alpha){
     }
   }
   
-  # The two.sided and delta !=0 has to be programmed differently
+  # The two.sided and delta != 0 has to be programmed differently
   if (alternative == "two.sided" && delta != 0) {
-    moreExtremeMat <- csmTemp2sidedDelta(data, moreExtremeMat, Ns, int, alternative, lookupArray, delta, reject.alpha)
+    moreExtremeMat <- csmTemp2sidedDelta(data, moreExtremeMat, Ns, int, alternative, lookupArray, doublePvalue, delta, reject.alpha, checkPrev = TRUE, prevMoreExtremeMat)
   } else {
-    moreExtremeMat <- csmTemp(data, moreExtremeMat, Ns, int, alternative, lookupArray, reject.alpha)
+    moreExtremeMat <- csmTemp(data, moreExtremeMat, Ns, int, alternative, lookupArray, doublePvalue, reject.alpha, checkPrev = TRUE, prevMoreExtremeMat)
   }
-  if (is.logical(moreExtremeMat)) { return(moreExtremeMat) }
+  # If moreExtremeMat is just FALSE, then return FALSE
+  if (isFALSE(moreExtremeMat)) { return(moreExtremeMat) }
+  # If reject.alpha is NULL, replace NA to 0
   moreExtremeMat[is.na(moreExtremeMat)] <- 0
-  #Loop over considered tables until (a,c) pair from data taken
   return(list(TXO=NA, moreExtremeMat=moreExtremeMat))
 }

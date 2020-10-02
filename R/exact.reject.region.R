@@ -1,7 +1,24 @@
 exact.reject.region <-
-function(n1, n2, alternative=c("two.sided", "less", "greater"), alpha=0.05, npNumbers=100, np.interval=FALSE, beta=0.001,
+function(n1, n2, alternative=c("two.sided", "less", "greater"), alpha=0.05, 
+                                npNumbers=100, np.interval=FALSE, beta=0.001,
                                 method=c("z-pooled", "z-unpooled", "boschloo", "santner and snell", "csm", "csm approximate", "fisher", "chisq", "yates chisq"),
-                                ref.pvalue=TRUE, delta=0, convexity=TRUE){
+                                tsmethod=c("square", "central"), ref.pvalue=TRUE, delta=0, convexity=TRUE){
+  
+  alternative <- match.arg(tolower(alternative), c("two.sided", "less", "greater"))
+  tsmethod <- match.arg(tolower(tsmethod), c("square", "central"))
+  
+  # if two-sided and central, easiest to simply find rejection regions when greater and less and dividing alpha by 2
+  if (alternative == "two.sided" && tsmethod == "central") {
+    rejectRegionUpper <- exact.reject.region(n1=n1, n2=n2, alternative="less", alpha=alpha/2, 
+                                             npNumbers=npNumbers, np.interval=np.interval, beta=beta,
+                                             method=method, tsmethod=tsmethod, ref.pvalue=ref.pvalue, delta=delta, convexity=convexity)
+    rejectRegionLower <- exact.reject.region(n1=n1, n2=n2, alternative="greater", alpha=alpha/2, 
+                                             npNumbers=npNumbers, np.interval=np.interval, beta=beta,
+                                             method=method, tsmethod=tsmethod, ref.pvalue=ref.pvalue, delta=delta, convexity=convexity)
+    rejectRegion <- rejectRegionUpper + rejectRegionLower
+    if (!all(rejectRegion %in% c(0,1))) { stop("Check rejection region logic") }
+    return(rejectRegion)
+  }
   
   #Perform several checks
   stopifnot(is.logical(np.interval) && is.logical(ref.pvalue))
@@ -9,19 +26,15 @@ function(n1, n2, alternative=c("two.sided", "less", "greater"), alpha=0.05, npNu
   if (np.interval && (beta < 0 || beta > 1)) { stop("Beta must be between 0 and 1") }
   if (npNumbers < 1) { stop("Total number of nuisance parameters considered must be at least 1") }
   
-  alternative <- match.arg(tolower(alternative), c("two.sided", "less", "greater"))
-  
-  #Sometimes Z-pooled is called score and Z-unpooled is called wald statistic
+  # The Z-pooled statistic that calculates the variance using MLE, which is the pooled variance if delta=0.
+  # The Z-pooled statistic is also (perhaps better) known as the Score statistic
+  # The classic z-pooled statistic is not performed as the performance is inferior when delta != 0
   if (length(method)==1 && tolower(method)=="score") { method <- "z-pooled" }
-  if (length(method)==1 && tolower(method)=="wald") { method <- "z-unpooled" }
+  #if (length(method)==1 && tolower(method)=="wald") { method <- "z-unpooled" }
   method <- match.arg(tolower(method), c("z-pooled", "z-unpooled", "boschloo", "santner and snell",
                                          "csm", "csm approximate", "fisher", "chisq", "yates chisq"))
   
   if (n1 <= 0 || n2 <= 0) { stop("Fixed sample sizes must be greater than 0") }
-  
-  if (delta != 0 && !(method %in% c("z-pooled", "csm"))) {
-    stop("Delta != 0 only works for Z-pooled and CSM tests")
-  }
   
   if (method %in% c("csm", "csm approximate", "fisher", "chisq", "yates chisq") && np.interval) {
     warning("Interval of nuisance parameter cannot be used with CSM, fisher, or chi-square test; np.interval changed to FALSE")
@@ -53,13 +66,13 @@ function(n1, n2, alternative=c("two.sided", "less", "greater"), alpha=0.05, npNu
     
     # For the tests with a test statistic:
     TX <- switch(method,
-                 "z-pooled" = zpooled_TX(NULL, c(n1, n2), delta),
-                 "z-unpooled" = zunpooled_TX(NULL, c(n1, n2)),
-                 "boschloo" = fisher.2x2(NULL, c(n1, n2), alternative),
-                 "santner and snell" = santner_TX(NULL, c(n1, n2)),
+                 "z-pooled" = zpooled_TX(NULL, c(n1, n2), delta=delta),
+                 "z-unpooled" = zunpooled_TX(NULL, c(n1, n2), delta=delta),
+                 "boschloo" = fisher.2x2(NULL, c(n1, n2), alternative=alternative),
+                 "santner and snell" = santner_TX(NULL, c(n1, n2), delta=delta),
                  "csm approximate" = csmApprox_TX(NULL, c(n1, n2), alternative, int, lookupArray),
-                 "chisq" = chisq_TX(NULL, c(n1, n2), FALSE),
-                 "yates chisq" = chisq_TX(NULL, c(n1, n2), TRUE))
+                 "chisq" = chisq_TX(NULL, c(n1, n2), yates=FALSE),
+                 "yates chisq" = chisq_TX(NULL, c(n1, n2), yates=TRUE))
     
     # Instead of starting with the most extreme table and adding subquentially, start in the middle and move up or down
     # depending on whether we have a more extreme table.  This can greatly reduce the number of p-values calculated
@@ -74,11 +87,12 @@ function(n1, n2, alternative=c("two.sided", "less", "greater"), alpha=0.05, npNu
     # We can just cross out all test statistics >=0 since this p-value would be >= 0.5.
     if (method %in% c("z-pooled", "z-unpooled", "santner and snell", "chisq", "yates chisq") & delta==0) { TX[TX[,3] >= 0, 4] <- FALSE }
     
-    moreExtremeTbls <- searchExtreme(TX = TX, n1 = n1, n2 = n2, alternative = alternative, method = method, int = int, delta = delta, alpha = alpha, lookupArray = lookupArray)
+    moreExtremeTbls <- searchExtreme(TX = TX, n1 = n1, n2 = n2, alternative = alternative, method = method, int = int, delta = delta,
+                                     alpha = alpha, lookupArray = lookupArray)
   } else if (method == "csm") {
     int <- seq(0.00001, .99999, length=npNumbers)
     rejectRegion <- moreExtremeCSM(data=NULL, Ns = c(n1, n2), alternative = alternative,
-                                   int = int, delta = delta, reject.alpha = alpha)$moreExtremeMat
+                                   int = int, doublePvalue = FALSE, delta = delta, reject.alpha = alpha)$moreExtremeMat
     if (swapFlg){ rejectRegion <- t(rejectRegion) }
     return(rejectRegion)
   } else if (method %in% c("csm approximate", "fisher") || np.interval) {
@@ -101,10 +115,10 @@ function(n1, n2, alternative=c("two.sided", "less", "greater"), alpha=0.05, npNu
           tables <- matrix(c(i, n1-i, j, n2-j), 2, 2, byrow=TRUE)
           # Since we changed p1 and p2 if "greater", always set the test to "less"
           if (method=="fisher") {
-            rejectRegionTemp <- (fisher.2x2(tables, alternative=alternative) <= alpha)
+            rejectRegionTemp <- (fisher.2x2(tables, alternative=alternative)[3] <= alpha)
           } else {
             rejectRegionTemp <- (exact.test(tables, npNumbers=npNumbers, alternative=alternative, np.interval=np.interval,
-                                            beta=beta, method=method, to.plot=FALSE, ref.pvalue=ref.pvalue, delta=delta, reject.alpha=alpha))
+                                            beta=beta, method=method, tsmethod=tsmethod, to.plot=FALSE, ref.pvalue=ref.pvalue, delta=delta, reject.alpha=alpha))
           }
           
           if (rejectRegionTemp) {

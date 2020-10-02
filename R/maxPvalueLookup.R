@@ -1,5 +1,5 @@
 maxPvalueLookup <-
-function(tbls, int, lookupArray){
+function(tbls, int, lookupArray, doublePvalue){
   #Instead of calculating the binomial probabilities several times for a more extreme cell,
   #calculate the probability once and then combine with other more extreme cells:
   xTbls <- tbls[,1]
@@ -8,7 +8,7 @@ function(tbls, int, lookupArray){
   
   prob <- matrix(lookupArray[[1]][xTbls+1,]*lookupArray[[2]][yTbls+1,], ncol=length(int))
   prob <- .colSums(prob, nTbls, length(int))
-  prob <- signif(prob, 12) #Remove rounding errors
+  prob <- signif((1+doublePvalue)*prob, 12) #Remove rounding errors and double probabilities if applicable
   
   np <- int[which(prob==max(prob, na.rm=TRUE))]
   pvalue <- max(prob, na.rm=TRUE)

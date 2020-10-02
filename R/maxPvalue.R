@@ -1,5 +1,5 @@
 maxPvalue <-
-function(Mat, Ns, int, beta, delta){
+function(Mat, Ns, int, beta, delta, doublePvalue){
   Mat[is.na(Mat)] <- 0
   index <- 1
   prob <- rep(NA, length(int))
@@ -14,10 +14,13 @@ function(Mat, Ns, int, beta, delta){
     prob[index] <- suppressWarnings(sum(dbinom(0:maxX1, Ns[1], probVal+delta)*(Mat[1:(maxX1+1), (minX2+1):(Ns[2]+1), drop=FALSE] %*% dbinom(minX2:Ns[2], Ns[2], probVal))))
     index <- index + 1
   }
-  prob <- signif(prob, 12) #Remove rounding errors
+  prob <- signif((1+doublePvalue)*prob + beta, 12) #Remove rounding errors and double probabilities if applicable
+  
+  # Cutoff probabilities at 1 (only relevant if beta != 0) #
+  prob[!is.na(prob) & prob > 1] <- 1
   
   np <- int[which(prob==max(prob, na.rm=TRUE))]
-  pvalue <- max(prob, na.rm=TRUE) + beta
-  
+  pvalue <- max(prob, na.rm=TRUE)
+    
   return(list(prob=prob, pvalue=pvalue, np=np))
 }

@@ -1,27 +1,38 @@
 confInt <-
-function(conf.level, precision, results, ESTIMATE, data, alternative, npNumbers, method, cond.row, to.plot, ref.pvalue, delta) {
-  
-  deltas <- seq(-1+precision, 1-precision, by=precision)
+function(conf.level, ESTIMATE, data, alternative, npNumbers, np.interval, beta, method, tsmethod, cond.row, ref.pvalue, delta) {
+
   alpha <- 1 - conf.level
   
-  rejectDeltaUB <- rep(NA, length(deltas))
-  rejectDeltaUB[deltas <= ESTIMATE] <- 0
-  if (alternative == "two.sided") {
-    rejectDeltaLB <- rep(NA, length(deltas))
-    rejectDeltaLB[deltas >= ESTIMATE] <- 0
+  # Create function that takes the difference between the alpha and p-value and determine when it crosses 0 (can cross multiple times)
+  rootFunc <- function(x) {
+    vapply(x, function(x){alpha - binomialCode(data, alternative=alternative, npNumbers=npNumbers, np.interval=np.interval, beta=beta,
+                                               method=method, tsmethod=tsmethod, cond.row=cond.row, to.plot=FALSE, ref.pvalue=ref.pvalue, delta=x, reject.alpha=NULL)$p.value}, numeric(1))
   }
-  if (results$p.value <= alpha) {
-    if (ESTIMATE < delta) { rejectDeltaUB[deltas >= delta] <- 1 }
-    if (ESTIMATE > delta && alternative == "two.sided") { rejectDeltaLB[deltas <= delta] <- 1 }
+  
+  # uniroot.all function will capture the LB and UB most of the time, but need to check another root isn't missing.  Use while loop until no update
+  # pvalueRoots <- uniroot.all(rootFunc, lower=-0.9999, upper=0.9999, n=100)
+  
+  if (alternative == "greater" || ESTIMATE[[1]] >= 0.9999) { UB <- 1
   } else {
-    if (ESTIMATE < delta) { rejectDeltaUB[deltas <= delta] <- 0 }
-    if (ESTIMATE > delta && alternative == "two.sided") { rejectDeltaLB[deltas >= delta] <- 0 }
+    UB <- 1; prevUB <- 999; lowerVal <- max(c(ESTIMATE, -0.9999))
+    while (UB != prevUB) {
+      prevUB <- UB  # update prevUB before updating UB
+      UBroots <- uniroot.all(rootFunc, lower=lowerVal, upper=0.9999, n=100)
+      if (length(UBroots) != 0) { UB <- max(UBroots) }
+      lowerVal <- UB + 0.001  #After finding largest root, add a small value and see if there's any other larger root that was missed
+    }
   }
   
-  UB <- confIntTemp(rejectDeltaUB, deltas, data, alternative, alpha, npNumbers, method, cond.row, ref.pvalue, direction="UB")
+  if (alternative == "less" || ESTIMATE[[1]] <= -0.9999) { LB <- -1
+  } else {
+    LB <- -1; prevLB <- 999; lowerVal <- min(c(ESTIMATE, 0.9999))
+    while (LB != prevLB) {
+      prevLB <- LB  # update prevLB before updating LB
+      LBroots <- uniroot.all(rootFunc, lower=-0.9999, upper=lowerVal, n=100)
+      if (length(LBroots) != 0) { LB <- min(LBroots) }
+      lowerVal <- LB - 0.001  #After finding smallest root, subtract a small value and see if there's any other smaller root that was missed
+    }
+  }
   
-  if (alternative == "two.sided") {
-    LB <- confIntTemp(rejectDeltaLB, deltas, data, alternative, alpha, npNumbers, method, cond.row, ref.pvalue, direction="LB")
-    return(c(LB, UB))
-  } else { return(c(-1, UB)) }
+  return(c(LB, UB))
 }

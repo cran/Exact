@@ -8,16 +8,17 @@ function(TX, n1, n2, alternative, method, int, delta, alpha, lookupArray) {
   if (method %in% c("chisq", "yates chisq", "fisher")) {
     Tbls <- TX[TX[,3] == s, , drop=FALSE][1, 1:2]
     Tbls <- matrix(c(Tbls[1],n1-Tbls[1],Tbls[2],n2-Tbls[2]), byrow=TRUE, ncol=2)
-    if (method == "fisher") { pvalue <- fisher.2x2(Tbls, NULL, alternative=alternative)
+    if (method == "fisher") { pvalue <- fisher.2x2(Tbls, alternative=alternative)[3]
     } else {
       pvalue <- suppressWarnings(prop.test(Tbls, alternative=alternative, correct=(method=="yates chisq"))$p.value)
     }
   } else {
     Tbls <- TX[TX[,3] <= s, 1:2, drop=FALSE]
-    pvalue <- maxPvalueLookup(Tbls, int=int, lookupArray=lookupArray)$pvalue
+    pvalue <- maxPvalueLookup(Tbls, int=int, lookupArray=lookupArray, doublePvalue=FALSE)$pvalue
   }
   if (pvalue <= alpha){ TX[TX[,3] <= s, 4] <- TRUE
   } else { TX[TX[,3] >= s, 4] <- FALSE }
   
-  return(searchExtreme(TX = TX, n1 = n1, n2 = n2, alternative = alternative, method = method, int = int, delta = delta, alpha = alpha, lookupArray = lookupArray))
+  return(searchExtreme(TX = TX, n1 = n1, n2 = n2, alternative = alternative, method = method, int = int, delta = delta, alpha = alpha,
+                       lookupArray = lookupArray))
 }

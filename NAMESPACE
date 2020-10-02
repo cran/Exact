@@ -1,5 +1,8 @@
 export(exact.test)
 export(exact.reject.region)
 export(power.exact.test)
+
+import("rootSolve")
+
 importFrom("graphics", "plot", "points")
 importFrom("stats", "dbinom", "dhyper", "optimise", "phyper", "qbeta", "rbinom", "prop.test")

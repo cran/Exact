@@ -1,34 +1,40 @@
 exact.test <-
 function(data, alternative=c("two.sided", "less", "greater"), npNumbers=100, np.interval=FALSE, beta=0.001,
                        method=c("z-pooled", "z-unpooled", "boschloo", "santner and snell", "csm", "csm approximate"),
-                       model=c("Binomial","Multinomial"), conf.int=FALSE, conf.level=0.95, precision=0.001,
+                       model=c("Binomial", "Multinomial"), tsmethod=c("square", "central"),
+                       conf.int=FALSE, conf.level=0.95,
                        cond.row=TRUE, to.plot=TRUE, ref.pvalue=TRUE, delta=0, reject.alpha=NULL){
   
   #Perform several checks
   stopifnot(is.logical(np.interval) && is.logical(cond.row) && is.logical(to.plot) && is.logical(ref.pvalue) && is.logical(conf.int))
   if (np.interval && (beta < 0 || beta > 1)) { stop("Beta must be between 0 and 1") }
   if (conf.int && (conf.level <= 0 || conf.level >= 1)) { stop("conf.level must be between 0 and 1") }
-  if (conf.int && (round(1/precision) %% 10 != 0)) { stop("Precision must be a multiple of 0.01") }
   if (npNumbers < 1) { stop("Total number of nuisance parameters considered must be at least 1") }
   if (!is.null(reject.alpha) && (reject.alpha < 0 || reject.alpha > 1)) { stop("reject.alpha must be between 0 and 1") }
   
   alternative <- match.arg(tolower(alternative), c("two.sided", "less", "greater"))
   
-  #Sometimes Z-pooled is called score and Z-unpooled is called wald statistic
+  # The Z-pooled statistic that calculates the variance using MLE, which is the pooled variance if delta=0.
+  # The Z-pooled statistic is also (perhaps better) known as the Score statistic
+  # The classic z-pooled statistic is not performed as the performance is inferior when delta != 0
   if(length(method)==1 && tolower(method)=="score"){method <- "z-pooled"}
-  if(length(method)==1 && tolower(method)=="wald"){method <- "z-unpooled"}
+  #if(length(method)==1 && tolower(method)=="wald"){method <- "z-unpooled"}
   method <- match.arg(tolower(method), c("z-pooled", "z-unpooled", "boschloo", "santner and snell", "csm", "csm approximate"))
-  model <- match.arg(tolower(model), c("binomial","multinomial"))
+  model <- match.arg(tolower(model), c("binomial", "multinomial"))
+  tsmethod <- match.arg(tolower(tsmethod), c("square", "central"))
   
   if (nrow(data) != 2 || ncol(data) != 2) { stop("Input 2x2 table") }
   if (any(data < 0)) { stop("Can't have negative entries") }
+  if (!all(as.integer(data) == data)) { stop("Data must only contain integers") }
+  
   if (delta != 0 && model == "multinomial") {
     stop("Nonzero delta only implemented for binomial models")
   }
-  if ((delta != 0 || conf.int) && !(method %in% c("z-pooled", "csm"))) {
-    stop("Nonzero delta and confidence intervals only works for Z-pooled and CSM tests")
+
+  # Print special case that cannot be performed
+  if (alternative=="two.sided" && tsmethod == "square" && method %in% c("boschloo", "csm approximate") && (delta != 0 || conf.int)) {
+    stop(paste0(method, " with two-sided CIs and/or nonzero delta cannot be implemented when tsmethod='square'.  Suggest using tsmethod='central'"))
   }
-  if (!all(as.integer(data) == data)) { stop("Data must only contain integers") }
   
   if (method %in% c("csm", "csm approximate")) {
     if (model=="multinomial") { stop("Code currently cannot implement CSM tests for multinomial models") }
@@ -41,7 +47,7 @@ function(data, alternative=c("two.sided", "less", "greater"), npNumbers=100, np.
   if (model=="binomial") {
     
     results <- binomialCode(data, alternative=alternative, np.interval=np.interval, beta=beta, npNumbers=npNumbers,
-                            method=method, cond.row=cond.row, to.plot=to.plot, ref.pvalue=ref.pvalue, delta=delta, reject.alpha=reject.alpha)
+                            method=method, tsmethod=tsmethod, cond.row=cond.row, to.plot=to.plot, ref.pvalue=ref.pvalue, delta=delta, reject.alpha=reject.alpha)
     
     if (!is.null(reject.alpha)) { return(results) }
     
@@ -68,14 +74,14 @@ function(data, alternative=c("two.sided", "less", "greater"), npNumbers=100, np.
     
     # Calculate confidence interval
     if (conf.int) {
-      CINT <- confInt(conf.level, precision, results, ESTIMATE, data, alternative, npNumbers, method, cond.row, to.plot, ref.pvalue, delta)
+      CINT <- confInt(conf.level, ESTIMATE, data, alternative, npNumbers, np.interval, beta, method, tsmethod, cond.row, ref.pvalue, delta)
       attr(CINT, "conf.level") <- conf.level
     }
     
     return(structure(list(statistic = results$test.statistic, parameter = Ns, p.value = results$p.value,
                           conf.int = if (conf.int) CINT, 
                           estimate = ESTIMATE, null.value = null.value, alternative = alternative, 
-                          np=np, np.range=np.range, model = model, method = methodDescribed, 
+                          np=np, np.range=np.range, model = model, method = methodDescribed, tsmethod = tsmethod,
                           data.name = data.name), class = "htest"))
   }
   
