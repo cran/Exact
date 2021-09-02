@@ -4,20 +4,17 @@ function(method, data, Ns, alternative, int, delta){
   # If alternative="less", then only need to calculate boundary in upper triangle (faster than calculating all test statistics).
   # If alternative="two.sided" and delta=0, then can also calculate boundary in upper triangle since the lower triangle is always symmetric
   # If alternative="two.sided" and delta != 0, then unfortunately, need to consider every table.
-  # Special case for Boschloo or CSM approximate: statistics don't include a delta term, so use same ordering ignoring delta
+  # Special case for Boschloo: Fisher's p-value doesn't include a delta term, so use same ordering ignoring delta
   # (note: this can't work if delta != 0 and two-sided)
   
   if (alternative != "two.sided" || delta == 0) {
     
-    # Important note: ignore delta when ordering "boschloo" and "csm approximate"
-    if (method == "csm approximate") { lookupArray <- dbinomCalc(Ns, int, delta = 0) }
-    
+    # Important note: ignore delta when ordering "boschloo"
     TXO <- switch(method, 
                   "z-pooled" = zpooled_TX(data, Ns, delta=delta),
                   "z-unpooled" = zunpooled_TX(data, Ns, delta=delta),
                   "boschloo" = fisher.2x2(data, alternative=alternative),
-                  "santner and snell" = santner_TX(data, Ns, delta=delta),
-                  "csm approximate" = csmApprox_TX(data, Ns, alternative, int, lookupArray))[3]
+                  "santner and snell" = santner_TX(data, Ns, delta=delta))[3]
     
     # Doesn't appear this check is needed, but useful to confirm if debugging
     if (is.na(TXO)) { stop("Test statistic is NA; please check code") }
@@ -36,8 +33,7 @@ function(method, data, Ns, alternative, int, delta){
                           "z-pooled" = zpooled_TX(newDat, Ns, delta=delta),
                           "z-unpooled" = zunpooled_TX(newDat, Ns, delta=delta),
                           "boschloo" = fisher.2x2(newDat, alternative=alternative),
-                          "santner and snell" = santner_TX(newDat, Ns, delta=delta),
-                          "csm approximate" = csmApprox_TX(newDat, Ns, alternative, int, lookupArray))[3]
+                          "santner and snell" = santner_TX(newDat, Ns, delta=delta))[3]
           
           # Doesn't appear this check is needed, but useful to confirm if debugging
           if (is.na(newTX)) { stop("Test statistic is NA; please check code") }
@@ -48,7 +44,7 @@ function(method, data, Ns, alternative, int, delta){
             rejectFlg <- switch(alternative,
                                 "less" = (newTX <= TXO),
                                 "two.sided" = (abs(newTX) >= abs(TXO)))
-          } else if (method %in% c("boschloo", "csm approximate")) {
+          } else if (method == "boschloo") {
             rejectFlg <- (newTX <= TXO)
           }
           
@@ -72,14 +68,11 @@ function(method, data, Ns, alternative, int, delta){
     
   } else {  #The only case where we can't just calculate the boundary is if we have a two-sided test with delta != 0
     
-    if (method == "csm approximate") { lookupArray <- dbinomCalc(Ns, int, delta = 0) }
-    
     TX <- switch(method, 
                  "z-pooled" = zpooled_TX(NULL, Ns, delta=delta),
                  "z-unpooled" = zunpooled_TX(NULL, Ns, delta=delta),
                  "boschloo" = fisher.2x2(NULL, Ns, alternative=alternative),
-                 "santner and snell" = santner_TX(NULL, Ns, delta=delta),
-                 "csm approximate" = csmApprox_TX(NULL, Ns, alternative=alternative, int, lookupArray))
+                 "santner and snell" = santner_TX(NULL, Ns, delta=delta))
     
     # Doesn't appear this check is needed, but useful to confirm if debugging
     if (any(is.na(TX[ , 3]))) { stop("Test statistic is NA; please check code") }

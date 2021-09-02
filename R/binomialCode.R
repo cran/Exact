@@ -1,8 +1,5 @@
 binomialCode <-
-function(data, alternative, npNumbers, np.interval, beta, method, tsmethod, cond.row, to.plot, ref.pvalue, delta, reject.alpha){
-  
-  #If conditioning on row, then transpose 2x2 table
-  if (cond.row) { data <- t(data) }
+function(data, alternative, npNumbers, np.interval, beta, method, tsmethod, to.plot, ref.pvalue, delta, reject.alpha, useStoredCSM){
   
   Ns <- .colSums(data, 2, 2)
   N <- sum(Ns)
@@ -41,8 +38,47 @@ function(data, alternative, npNumbers, np.interval, beta, method, tsmethod, cond
   
   #Find tables that have a test statistic as or more extreme than the observed statistic:
   if (method == "csm") {
-    findMoreExtreme <- moreExtremeCSM(data = data, Ns = Ns, alternative = alternative,
-                                      int = int, doublePvalue = doublePvalue, delta = delta, reject.alpha = reject.alpha)
+    
+    # Use stored ordering matrix if available
+    if (max(Ns) <= 100 && delta == 0 && useStoredCSM) {
+      
+      if (!requireNamespace("ExactData", quietly = TRUE)) {
+        stop(paste("ExactData R package must be installed when useStoredCSM=TRUE. To install ExactData R package, run:",
+                   "`install.packages('ExactData', repos='https://pcalhoun1.github.io/drat/', type='source')`"))
+      }
+      
+      if (alternative == "two.sided") {
+        if (Ns[1] < Ns[2]) {  # Must convert known matrix of (n2,n1) to (n1,n2)
+          orderMat <- t(ExactData::orderCSMMatTwoSided[[paste0("(",Ns[2],",",Ns[1],")")]])
+          orderMat <- orderMat[(Ns[1]+1):1, (Ns[2]+1):1]
+          rownames(orderMat) <- 0:Ns[1]
+          colnames(orderMat) <- 0:Ns[2]
+        } else { orderMat <- ExactData::orderCSMMatTwoSided[[paste0("(",Ns[1],",",Ns[2],")")]] }
+        
+      } else {
+        if (Ns[1] < Ns[2]) {  # Must convert known matrix of (n2,n1) to (n1,n2)
+          orderMat <- t(ExactData::orderCSMMatOneSided[[paste0("(",Ns[2],",",Ns[1],")")]])
+          orderMat <- orderMat[(Ns[1]+1):1, (Ns[2]+1):1]
+          rownames(orderMat) <- 0:Ns[1]
+          colnames(orderMat) <- 0:Ns[2]
+        } else { orderMat <- ExactData::orderCSMMatOneSided[[paste0("(",Ns[1],",",Ns[2],")")]] }
+      }
+      
+      TX <- matrix(cbind(as.matrix(expand.grid(0:Ns[1], 0:Ns[2])), as.vector(orderMat)), ncol=3, dimnames = NULL)
+      TX <- TX[order(TX[,1], TX[,2]), ]
+      TX[ , 3] <- signif(TX[ , 3], 12)  #Remove rounding errors
+      
+      TXO <- TX[TX[,1]==data[1,1] & TX[,2]==data[1,2], 3]
+      
+      rejectFlg <- (TX[,3] <= TXO)
+      moreExtremeMat <- matrix(rejectFlg, Ns[1]+1, Ns[2]+1, byrow=TRUE, dimnames=list(0:Ns[1], 0:Ns[2]))*1
+      
+      # Set TXO to be NA (not ordering step number)
+      findMoreExtreme <- list(TXO=NA, moreExtremeMat=moreExtremeMat)
+    } else {      
+      findMoreExtreme <- moreExtremeCSM(data = data, Ns = Ns, alternative = alternative,
+                                        int = int, doublePvalue = doublePvalue, delta = delta, reject.alpha = reject.alpha)
+    }
     # if data is empty or findMoreExtreme is just FALSE, then return findMoreExtreme
     if (is.null(data) || isFALSE(findMoreExtreme)) { return(findMoreExtreme) }
   } else {

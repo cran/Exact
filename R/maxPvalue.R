@@ -1,6 +1,5 @@
 maxPvalue <-
 function(Mat, Ns, int, beta, delta, doublePvalue){
-  Mat[is.na(Mat)] <- 0
   index <- 1
   prob <- rep(NA, length(int))
   

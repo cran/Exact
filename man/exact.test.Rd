@@ -2,19 +2,17 @@
 \alias{exact.test}
 \alias{binomialCode}
 \alias{multinomialCode}
-\title{Unconditional Exact Tests for 2x2 tables}
-\description{Calculates Barnard's or Boschloo's unconditional exact test for binomial or multinomial models}
+\title{Unconditional Exact Tests for 2x2 Tables with Independent Samples}
+\description{Calculates Barnard's or Boschloo's unconditional exact test for binomial or multinomial models with independent samples}
 \usage{
 exact.test(data, alternative = c("two.sided", "less", "greater"), npNumbers = 100,
     np.interval = FALSE, beta = 0.001,
-    method = c("z-pooled", "z-unpooled", "boschloo", "santner and snell",
-               "csm", "csm approximate"),
+     method = c("z-pooled", "z-unpooled", "boschloo", "santner and snell", "csm"),
     model = c("Binomial", "Multinomial"), tsmethod = c("square", "central"),
     conf.int = FALSE, conf.level = 0.95,
     cond.row = TRUE, to.plot = TRUE, ref.pvalue = TRUE,
-    delta = 0, reject.alpha = NULL)
+    delta = 0, reject.alpha = NULL, useStoredCSM = TRUE)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{A two dimensional contingency table in matrix form}
   \item{alternative}{Indicates the alternative hypothesis: must be either "two.sided", "less", or "greater"}
@@ -23,27 +21,25 @@ exact.test(data, alternative = c("two.sided", "less", "greater"), npNumbers = 10
   \item{beta}{Number: Confidence level for constructing the interval of nuisance parameters considered.  Only used if np.interval=TRUE}
   \item{method}{
 Indicates the method for finding the more extreme tables:
-must be either "Z-pooled", "Z-unpooled", "Santner and Snell", "Boschloo", "CSM", or "CSM approximate".
-CSM tests cannot be calculated for multinomial models
-}
+must be either "Z-pooled", "Z-unpooled", "Santner and Snell", "Boschloo", or "CSM".
+CSM tests cannot be calculated for multinomial models}
   \item{model}{The model being used: must be either "Binomial" or "Multinomial"}
   \item{tsmethod}{
-Indicates two-sided method: must be either "square" or "central".  Only used if model="Binomial"
-}
+Indicates two-sided method: must be either "square" or "central".  Only used if model="Binomial"}
   \item{conf.int}{
 Logical: Indicates if a confidence interval on the difference in proportion should be computed.
-Only used if model="Binomial"
-}
+Only used if model="Binomial"}
   \item{conf.level}{Number: Confidence level of interval on difference in proportion.  Only used if conf.int=TRUE}
   \item{cond.row}{Logical: Indicates if row margins are fixed in the binomial models.  Only used if model="Binomial"}
   \item{to.plot}{Logical: Indicates if plot of p-value vs. nuisance parameter should be generated.  Only used if model="Binomial"}
   \item{ref.pvalue}{Logical: Indicates if p-value should be refined by maximizing the p-value function after the nuisance parameter is selected.  Only used if model="Binomial"}
   \item{delta}{Number: null hypothesis of the difference in proportion.  Only used if model="Binomial"}
   \item{reject.alpha}{Number: significance level for exact test.  Optional and primarily used to speed up \code{\link{exact.reject.region}} function}
+  \item{useStoredCSM}{Logical: uses stored CSM ordering matrix.  Only used if method="csm"}
 }
 
 \details{
-Unconditional exact tests (i.e., Barnard's test) can be performed for binomial or multinomial models. The binomial model assumes the row or column margins (but not both) are known in advance, while the multinomial model assumes only the total sample size is known beforehand.  For the binomial model, the user needs to specify which margin is fixed (default is rows). Conditional tests (e.g., Fisher's exact test) have both row and column margins fixed, but this is a very uncommon design.
+Unconditional exact tests (i.e., Barnard's test) can be performed for binomial or multinomial models with independent samples. The binomial model assumes the row or column margins (but not both) are known in advance, while the multinomial model assumes only the total sample size is known beforehand.  For the binomial model, the user needs to specify which margin is fixed (default is rows). Conditional tests (e.g., Fisher's exact test) have both row and column margins fixed, but this is a very uncommon design.  For paired samples, see \code{\link{paired.exact.test}}.
 
 For the binomial model, the null hypothesis is the difference of proportion is equal to 0. Under the null hypothesis, the probability of a 2x2 table is the product of two binomials. The p-value is calculated by maximizing a nuisance parameter and summing the as or more extreme tables. The \code{method} parameter specifies the method to determine the more extreme tables (see references for more details):
 
@@ -58,22 +54,23 @@ For the binomial model, the null hypothesis is the difference of proportion is e
   \item Boschloo - Uses the p-value from Fisher's exact test
   
   \item CSM - Starts with the most extreme table and sequentially adds more extreme tables based on the smallest p-value (calculated by maximizing the probability of a 2x2 table).  This is Barnard's original method
-  
-  \item CSM approximate - Similar to the CSM test, but does not update the maximum p-value calculation when each table is added
 }
 
-There is some disagreement on which method to use.  Suissa and Shuster suggested using a Z-pooled statistic, which is uniformly more powerful than Fisher's test for balanced designs.  Boschloo recommended using the p-value for Fisher's test as the test statistic.  This method became known as Boschloo's test, and it is always uniformly more powerful than Fisher's test.  Mato and Andres suggested using Barnard's CSM test.  This is the recommended method by the author of this R package, but is much more computationally intensive.  All of these methods are generally superior to Fisher's exact test, and most researchers agree that Fisher's exact test should \strong{not} be used to analyze 2x2 tables.
+There is some disagreement on which method to use.  Barnard's CSM (Convexity, Symmetry, and Minimization) test is often the most powerful test, but is much more computationally intensive.  This test is recommended by Mato and Andres and the author of this R package when computationally feasible.  Suissa and Shuster suggested using a Z-pooled statistic, which is uniformly more powerful than Fisher's test for balanced designs.  Boschloo recommended using the p-value for Fisher's test as the test statistic.  This method became known as Boschloo's test, and it is always uniformly more powerful than Fisher's test.  Many researchers argue that Fisher's exact test should \strong{never} be used to analyze 2x2 tables (except in the rare instance both margins are fixed).
 
-Once the more extreme tables are determined, the p-value is calculated the maximizing over the common success probability -- a nuisance parameter.  The p-value computation has many local maxima and can be computationally intensive.  The code performs an exhaustive search by considering many values of the nuisance parameter from 0 to 1, represented by \code{npNumbers}.  If \code{ref.pvalue = TRUE}, then the code will also use the \code{optimise} function near the nuisance parameter to refine the p-value.  Increasing \code{npNumbers} and using \code{ref.pvalue} ensures the p-value is correctly calculated at the expense of slightly more computation time.
+Once the more extreme tables are determined, the p-value is calculated by maximizing over the common success probability -- a nuisance parameter.  The p-value computation has many local maxima and can be computationally intensive.  The code performs an exhaustive search by considering many values of the nuisance parameter from 0 to 1, represented by \code{npNumbers}.  If \code{ref.pvalue = TRUE}, then the code will also use the \code{optimise} function near the nuisance parameter to refine the p-value.  Increasing \code{npNumbers} and using \code{ref.pvalue} ensures the p-value is correctly calculated at the expense of slightly more computation time.
 
 Another approach, proposed by Berger and Boos, is to calculate the Clopper-Pearson confidence interval of the nuisance parameter (represented by \code{np.interval}) and only maximize the p-value function for nuisance parameters within the confidence interval; this approach adds a small penalty to the p-value to control for the type 1 error rate (cannot be used with CSM).
 
-The tests can also be implemented to test for non-inferiority by changing the \code{delta} for binomial models. A confidence interval for the difference in proportion can be constructed by determining the smallest delta such that all greater deltas are significant (essentially the delta that crosses from non-significant to significant, but since the p-value is non-monotonic as a function of delta, this code takes the supremum).  For details regarding calculation, please see Chan (2003).  We note the "z-pooled" method uses a delta-projected Z-statistic (aka Score) and uses a constrained MLE of the success proportions, while "boschloo" method ignores the delta and uses the same ordering procedure.  
+The tests can also be implemented for non-inferiority hypotheses by changing the \code{delta} for binomial models. A confidence interval for the difference in proportion can be constructed by determining the smallest delta such that all greater deltas are significant (essentially the delta that crosses from non-significant to significant, but since the p-value is non-monotonic as a function of delta, this code takes the supremum).  For details regarding calculation, please see Chan (2003).  We note the "z-pooled" method uses a delta-projected Z-statistic (aka Score) and uses a constrained MLE of the success proportions, while "boschloo" method ignores the delta and uses the same ordering procedure.  
 
-For two-sided tests, the code will either sum the probabilities for both sides of the table if \code{tsmethod = "square"} (Default, same approach as \code{fisher.test}) or construct a one-sided test and double the p-value if \code{tsmethod = "square"}.  Generally, the "square" procedure is more powerful and conventional, although there are some advantages with using the "central" procedure.  Mainly, there's no procedure to find the more extreme tables for a two-sided alternative with non-zero delta with Boschloo's test (Fisher's p-value).  Thus, to calculate a two-sided confidence interval with Boschloo's test, one has to resort to using the "central" approach.  For other tests, there is an equivalent statistic based on delta, and two-sided p-value is determined by either the Agresti-Min interval (\code{tsmethod = "square"}) or Chan-Zhang interval (\code{tsmethod = "central"}).
+For two-sided tests, the code will either sum the probabilities for both sides of the table if \code{tsmethod = "square"} (Default, same approach as \code{fisher.test}) or construct a one-sided test and double the p-value if \code{tsmethod = "central"}.  Generally, the "square" procedure is more powerful and conventional, although there are some advantages with using the "central" procedure.  Mainly, Boschloo's test cannot order tables (i.e., use Fisher's p-value) for a two-sided alternative with non-zero delta.  Thus, to calculate a two-sided confidence interval with Boschloo's test, one has to resort to using the "central" approach.  For other tests, there is an equivalent statistic based on delta, and the two-sided p-value is determined by either the Agresti-Min interval (\code{tsmethod = "square"}) or Chan-Zhang interval (\code{tsmethod = "central"}).
+
+The CSM test is computationally intensive due to iteratively maximizing the p-value calculation to order the tables.  The CSM ordering matrix has been stored for all possible sample sizes less than or equal to 100 (i.e., max(n1,n2)<=100).  Thus, using the \code{useStoredCSM = TRUE} can greatly improve computation time.  However, the stored ordering matrix was computed with \code{npNumbers=100} and it is possible that the ordering matrix was not optimal for larger \code{npNumbers}.  Increasing \code{npNumbers} and setting \code{useStoredCSM = FALSE} ensures the p-value is correctly calculated at the expense of significantly greater computation time.  The stored ordering matrix is not used in the calculation of confidence intervals or non-inferiority tests, so CSM can still be very computationally intensive.
 
 The above description applies to the binomial model.  The multinomial model is similar except there are two nuisance parameters.  The CSM test has not been developed for multinomial models.  Improvements to the code have focused on the binomial model, so multinomial models takes substantially longer.
 }
+
 \value{
 A list with class "htest" containing the following components:
 
@@ -125,21 +122,27 @@ CSM test and multinomial models are much more computationally intensive.  I have
 
 This code was influenced by the FORTRAN program located at \url{https://www4.stat.ncsu.edu/~boos/exact/}
 }
-\section{Warning}{Multinomial models and CSM tests may take a very long time, even for small sample sizes.}
+\section{Warning}{Multinomial models and CSM tests with confidence intervals may take a very long time, even for small sample sizes.}
 
 \seealso{
 \code{fisher.test} and \pkg{exact2x2}
 }
 \examples{
 data <- matrix(c(7, 8, 12, 3), 2, 2, byrow=TRUE)
-exact.test(data, method="Z-pooled", alternative="less", conf.int=TRUE, conf.level=0.95)
-exact.test(data, method="Boschloo", alternative="two.sided", tsmethod="central",
-           np.interval=TRUE, beta=0.001)
+exact.test(data, alternative="two.sided", method="Z-pooled",
+           conf.int=TRUE, conf.level=0.95)
+exact.test(data, alternative="two.sided", method="Boschloo",
+           np.interval=TRUE, beta=0.001, tsmethod="central")
 
+\dontrun{
+# Ensure that the ExactData R package is available before running the CSM test.
+if (requireNamespace("ExactData", quietly = TRUE)) {
 # Example from Barnard's (1947) appendix:
 data <- matrix(c(4, 0, 3, 7), 2, 2,
                dimnames=list(c("Box 1","Box 2"), c("Defective","Not Defective")))
 exact.test(data, method="CSM", alternative="two.sided")
+}
+}
 }
 \keyword{htest}
 \concept{Barnard}

@@ -5,7 +5,7 @@ function(TX, n1, n2, alternative, method, int, delta, alpha, lookupArray) {
   m <- floor(length(TXunique)/2) + 1  #Very slightly faster
   s <- TXunique[m]
   
-  if (method %in% c("chisq", "yates chisq", "fisher")) {
+  if (method %in% c("pearson chisq", "yates chisq", "fisher")) {
     Tbls <- TX[TX[,3] == s, , drop=FALSE][1, 1:2]
     Tbls <- matrix(c(Tbls[1],n1-Tbls[1],Tbls[2],n2-Tbls[2]), byrow=TRUE, ncol=2)
     if (method == "fisher") { pvalue <- fisher.2x2(Tbls, alternative=alternative)[3]

@@ -1,8 +1,8 @@
-csmTemp2sidedDelta <-
-function(data, moreExtremeMat, Ns, int, alternative, lookupArray, doublePvalue, delta, reject.alpha, checkPrev, prevMoreExtremeMat){
-
-  # Only use z-pooled for ties
-  TX <- zpooled_TX(NULL, Ns, delta)
+csmPairedTemp2sidedDelta <-
+function(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.alpha, checkPrev, prevMoreExtremeMat){
+  
+  # Only use McNemar for ties
+  TX <- mcnemar_TX(NULL, N, delta=delta, CC=FALSE)
   TX[, 3] <- signif(TX[ , 3], 12)  #Remove rounding errors
   TX <- TX[order(TX[,1], TX[,2]), ]
   TX[,3] <- -abs(TX[,3])
@@ -13,7 +13,7 @@ function(data, moreExtremeMat, Ns, int, alternative, lookupArray, doublePvalue, 
     
     AC <- which(moreExtremeMat==0, arr.ind = TRUE) - 1
     
-    AC <- cbind(AC, (AC[,1]/Ns[1] - AC[,2]/Ns[2]) < delta)
+    AC <- cbind(AC, (AC[,1]/N - AC[,2]/N) < delta)
     AC_LT <- AC[AC[,3] == 0, 1:2, drop=FALSE]
     AC_LT <- AC_LT[order(AC_LT[,1],AC_LT[,2]), , drop=FALSE]
     AC_LT <- AC_LT[!duplicated(AC_LT[,1]), , drop=FALSE]
@@ -33,8 +33,8 @@ function(data, moreExtremeMat, Ns, int, alternative, lookupArray, doublePvalue, 
     
     CcondAC <- rep(0, nrow(AC))
     for (j in 1:nrow(AC)) {
-      CcondAC[j] <- maxPvalueLookup(rbind(Tbls, AC[j,]),
-                                    int=int, lookupArray=lookupArray, doublePvalue=doublePvalue)$pvalue
+      CcondAC[j] <- maxPvaluePairedLookup(rbind(Tbls, AC[j,]),
+                                    int=int, lookupArray=lookupArray)$pvalue
     }
     
     smallestPvalue <- min(round(CcondAC, digits=12))
@@ -47,7 +47,7 @@ function(data, moreExtremeMat, Ns, int, alternative, lookupArray, doublePvalue, 
       # There are 2 cases where moreExtremeMat may be incorrect and needs to be updated:
       # (1) if no tables have been added and even most extreme table is not significant (unlikely)
       # (2) if previously added two tables where individually the p-values are < alpha, but together are larger than alpha (possible)
-      if (checkPrev && maxPvalueLookup(Tbls, int=int, lookupArray=lookupArray, doublePvalue=doublePvalue)$pvalue > reject.alpha) {
+      if (checkPrev && maxPvalueLookup(Tbls, int=int, lookupArray=lookupArray)$pvalue > reject.alpha) {
         moreExtremeMat <- prevMoreExtremeMat
       }
       return(moreExtremeMat)
@@ -55,7 +55,7 @@ function(data, moreExtremeMat, Ns, int, alternative, lookupArray, doublePvalue, 
     
     # Update moreExtremeMat
     addRow <- AC[which(round(CcondAC, digits=12) == smallestPvalue), , drop=FALSE] + 1
-    # If there are ties, use Z-test to break ties
+    # If there are ties, use McNemar's test to break ties
     if (nrow(addRow) > 1) {
       TXties <- cbind(addRow, apply(addRow, 1, function(x) { TX[TX[ , 1] == (x[1]-1) & TX[ , 2] == (x[2]-1), 3] }))
       TXties <- TXties[order(TXties[,3]), ]
@@ -65,18 +65,11 @@ function(data, moreExtremeMat, Ns, int, alternative, lookupArray, doublePvalue, 
     checkPrev <- (nrow(addRow) > 1)
     prevMoreExtremeMat <- moreExtremeMat
     
-    for (j in 1:nrow(addRow)) {
-      moreExtremeMat[addRow[j,1], addRow[j,2]] <- 1
-      #if (alternative == 'two.sided') { moreExtremeMat[Ns[1] + 2 - addRow[j,1], Ns[2] + 2 - addRow[j,2]] <- 1 }
-      if (addRow[j,2] >= 2 && is.na(moreExtremeMat[addRow[j,1], addRow[j,2]-1])) { moreExtremeMat[addRow[j,1], addRow[j,2]-1] <- 0 }
-      if (addRow[j,1] <= Ns[1] && is.na(moreExtremeMat[addRow[j,1]+1, addRow[j,2]])) { moreExtremeMat[addRow[j,1]+1, addRow[j,2]] <- 0 }
-      if (addRow[j,2] <= Ns[2] && is.na(moreExtremeMat[addRow[j,1], addRow[j,2]+1])) { moreExtremeMat[addRow[j,1], addRow[j,2]+1] <- 0 }
-      if (addRow[j,1] >= 2 && is.na(moreExtremeMat[addRow[j,1]-1, addRow[j,2]])) { moreExtremeMat[addRow[j,1]-1, addRow[j,2]] <- 0 }
-    }
+    moreExtremeMat <- updateMat(moreExtremeMat, addRow)
     
     if (!is.null(data)) {
       for (j in 1:nrow(addRow)) {
-        if (all(addRow[j, ]-1 == data[1,])) {
+        if (all(addRow[j, ]-1 == c(data[1,2], data[2,1]))) {
           return(moreExtremeMat)
         }
       }
@@ -87,6 +80,7 @@ function(data, moreExtremeMat, Ns, int, alternative, lookupArray, doublePvalue, 
       print(paste0("CSM added ", nIter, " more extreme tables so far; may be too computationally intensive and suggest aborting"))
     }
   }
+  
   #Perform recursive loop
-  #csmTemp2sidedDelta(data, moreExtremeMat, Ns, int, alternative, lookupArray, doublePvalue, delta, reject.alpha, checkPrev, prevMoreExtremeMat)
+  #csmPairedTemp2sidedDelta(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.alpha, checkPrev, prevMoreExtremeMat)
 }

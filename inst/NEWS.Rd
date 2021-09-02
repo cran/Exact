@@ -1,6 +1,18 @@
 \name{NEWS}
 \title{NEWS file for the Exact package}
 
+\section{Changes in Version 3.0 (2021-09-01)}{
+  \itemize{
+
+    \item{Added unconditional exact tests to compare two paired proportions!  Three functions are added: paired.exact.test, paired.reject.region, and power.paired.test}
+    
+    \item{Fixed issues with CSM test and greatly improved computation time.  Added the parameter "useStoredCSM", which uses a stored pre-computed CSM ordering matrix for sample sizes with max(n1,n2) <= 100 for two independent proportions and sample size <= 200 for two paired proportions.  Stored CSM ordering matrix is around 25MB, so is loaded from the ExactData R package from GitHub using the drat R package}
+
+    \item{For two independent proportions, removed method option "csm approximate", changed method option "chisq" to "pearson chisq", and removed ref.pvalue option in exact.reject.region() and power.exact.test() functions.  Added more checks to make it more user-friendly}
+  }
+}
+
+
 \section{Changes in Version 2.1 (2020-10-01)}{
   \itemize{
     
