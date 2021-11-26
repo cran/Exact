@@ -6,6 +6,7 @@
 \alias{chisq_TX}
 \alias{confInt}
 \alias{confIntPaired}
+\alias{convertMethod}
 \alias{csmPairedTemp}
 \alias{csmPairedTemp2sidedDelta}
 \alias{csmTemp}

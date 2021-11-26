@@ -1,5 +1,5 @@
 mcnemar.2x2 <-
-function(data, N, alternative) {
+function(data, N, alternative, pval1ties) {
   
   if (!is.null(data)) {
     x <- data[1,2]
@@ -17,5 +17,12 @@ function(data, N, alternative) {
                          "greater" = pbinom(tbls[2], tbls[1] + tbls[2], 0.5),
                          "two.sided" = min(c(1,2*pbinom(min(c(tbls[1],tbls[2])), tbls[1] + tbls[2], 0.5))))
                 })
+  
+  # CM p-value can be 1 for many tables.  Can break ties of 1 using AM z-score (ignore delta)
+  if (pval1ties) {
+    TX <- mcnemar_TX(data, N, delta=0, CC=FALSE)
+    pval[pval == 1] <- pval[pval == 1] + abs(TX[pval == 1,3])
+  }
+  
   return(cbind(x, y, pval, deparse.level=0))
 }

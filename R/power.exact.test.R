@@ -36,13 +36,15 @@ function(p1, p2, n1, n2, alternative=c("two.sided", "less", "greater"), alpha=0.
       if (delta != 0 || (alternative=="greater" && (randTables[i,1]/n1 - randTables[i,3]/n2) > 0) ||
           (alternative=="less" && (randTables[i,1]/n1 - randTables[i,3]/n2) < 0) || 
           (alternative=="two.sided" && randTables[i,1]/n1 != randTables[i,3]/n2)) {
+        
+        dat <- matrix(randTables[i,], ncol=2, nrow=2)
         if (method=="fisher") {
-          moreExtremeSim[i] <- (fisher.2x2(matrix(randTables[i,], ncol=2, nrow=2), alternative=alternative)[3] <= alpha)
+          moreExtremeSim[i] <- (fisher.2x2(dat, alternative=alternative)[3] <= alpha)
         } else if (method %in% c("pearson chisq", "yates chisq")) {
-          moreExtremeSim[i] <- suppressWarnings(prop.test(matrix(randTables[i,], nrow=2, ncol=2), alternative=alternative,
+          moreExtremeSim[i] <- suppressWarnings(prop.test(dat, alternative=alternative,
                                                        correct=(method == "yates chisq"))$p.value <= alpha)
         } else {
-          moreExtremeSim[i] <- (binomialCode(matrix(randTables[i,], ncol=2, nrow=2), alternative=alternative, npNumbers=npNumbers,
+          moreExtremeSim[i] <- (binomialCode(dat, alternative=alternative, npNumbers=npNumbers,
                                           np.interval=np.interval, beta=beta, method=method, tsmethod=tsmethod, to.plot=FALSE,
                                           ref.pvalue=FALSE, delta=delta, reject.alpha=alpha, useStoredCSM=useStoredCSM))
         }

@@ -26,7 +26,7 @@ must be either "Z-pooled", "Z-unpooled", "Santner and Snell", "Boschloo", "CSM",
   \item{tsmethod}{Indicates two-sided method: must be either "square" or "central"}
   \item{simulation}{Logical: Indicates if the power calculation is exact or estimated by simulation}
   \item{nsim}{Number of simulations run.  Only used if simulation=TRUE}
-  \item{delta}{Number: null hypothesis of the difference in proportion.  Only used if method is "z-pooled" or "csm"}
+  \item{delta}{Number: null hypothesis of the difference in proportion}
   \item{convexity}{Logical: assumes convexity for interval approach.  Only used if np.interval=TRUE}
   \item{useStoredCSM}{Logical: uses stored CSM ordering matrix.  Only used if method="csm"}
 }

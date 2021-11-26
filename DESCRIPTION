@@ -1,7 +1,7 @@
 Package: Exact
 Type: Package
 Title: Unconditional Exact Test
-Version: 3.0
+Version: 3.1
 Authors@R: person("Peter", "Calhoun", email="calhoun.peter@gmail.com", role=c("aut", "cre"))
 Author: Peter Calhoun [aut, cre]
 Maintainer: Peter Calhoun <calhoun.peter@gmail.com>
@@ -12,8 +12,8 @@ Description: Performs unconditional exact tests and power calculations for 2x2 c
   or using a Z-statistic (Suissa and Shuster, 1985, <doi:10.2307/2981892>).
   For comparing two binary proportions, performs unconditional exact test using McNemar's
   Z-statistic (Berger and Sidik, 2003, <doi:10.1191/0962280203sm312ra>),
-  using McNemar's Z-statistic with continuity correction, or using CSM test.
-  Calculates confidence intervals for the difference in proportion.
+  using McNemar's conditional p-value, using McNemar's Z-statistic with continuity correction,
+  or using CSM test.  Calculates confidence intervals for the difference in proportion.
   This package interacts with pre-computed data available through the ExactData R package,
   which is available in a 'drat' repository.
   Install the ExactData R package from GitHub at <https://pcalhoun1.github.io/drat/>.
@@ -24,6 +24,6 @@ Imports: graphics, stats, utils, rootSolve
 Suggests: ExactData
 Additional_repositories: https://pcalhoun1.github.io/drat
 NeedsCompilation: no
-Packaged: 2021-09-01 17:06:38 UTC; pcalh
+Packaged: 2021-11-26 20:11:13 UTC; pcalh
 Repository: CRAN
-Date/Publication: 2021-09-02 15:50:02 UTC
+Date/Publication: 2021-11-26 21:40:02 UTC

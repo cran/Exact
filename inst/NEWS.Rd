@@ -1,6 +1,20 @@
 \name{NEWS}
 \title{NEWS file for the Exact package}
 
+\section{Changes in Version 3.1 (2021-11-26)}{
+  \itemize{
+
+    \item{Added tsmethod parameter to unconditional paired tests}
+
+    \item{Added "UCM" test and changed names of method options for unconditional paired tests}
+    
+    \item{Fixed issue with unconditional paired tests where confidence bounds are not possible based on extreme delta}
+    
+    \item{Fixed error message for two independent sample tests when confidence bounds are either 0 or 1.  Thanks to Ping Mahling for pointing out this issue}
+  }
+}
+
+
 \section{Changes in Version 3.0 (2021-09-01)}{
   \itemize{
 

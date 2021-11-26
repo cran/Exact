@@ -1,9 +1,9 @@
 pairedCode <-
-function(data, alternative, npNumbers, np.interval, beta, method, to.plot, ref.pvalue, delta, reject.alpha, useStoredCSM) {
+function(data, alternative, npNumbers, np.interval, beta, method, tsmethod, to.plot, ref.pvalue, delta, reject.alpha, useStoredCSM) {
 
   N <- sum(data)
   
-  # If alternative is "greater" or two.sided test has p21 -p12 > delta, then swap groups.  This is a major
+  # If alternative is "greater" or two.sided test has p21 - p12 > delta, then swap groups.  This is a major
   # simplification, since code can now only consider cases where the alternative is less than or two.sided with less than always being more
   # extreme.  Will change the test statistic at the end
   swapFlg <- ((alternative == "greater") || (alternative=="two.sided" && (data[1,2]/N - data[2,1]/N) > delta))
@@ -14,16 +14,33 @@ function(data, alternative, npNumbers, np.interval, beta, method, to.plot, ref.p
     delta <- -delta
     if (alternative == "greater") { alternative <- "less" }
   }
+
+  # If two.sided test with central method, then simply calculate one-sided test and double the p-value
+  if (alternative == "two.sided" && tsmethod == "central") {
+    alternative <- "less"
+    doublePvalue <- TRUE
+  } else { doublePvalue <- FALSE }
   
   #Specify nuisance parameter range
   if (np.interval && beta != 0) {
     tempInt <- discordant.CI(data[1,2]+data[2,1], N, conf.level=1-beta)
     if (delta == 0) { int <- seq(max(c(0.00001, tempInt[1])), min(c(0.49999, tempInt[2])), length=npNumbers)
-    } else if (delta > 0) { int <- seq(max(c(0.00001, tempInt[1])), min(c((1-delta)/2 - 0.0001, tempInt[2])), length=npNumbers)
-    } else if (delta < 0) { int <- seq(max(c(-delta + 0.00001, tempInt[1])), min(c((1 - delta)/2 - 0.00001, tempInt[2])), length=npNumbers)}
+    } else if (delta > 0) {
+      # The LB may be impossible if LB + LB + delta > 1.  In that case, change int to be lowest possible value
+      if (((1-delta)/2 - 0.00001) < tempInt[1]) { int <- (1-delta)/2 - 0.00001
+      } else {
+        int <- seq(max(c(0.00001, tempInt[1])), min(c((1-delta)/2 - 0.00001, tempInt[2])), length=npNumbers)
+      }
+    } else if (delta < 0) {
+      # The UB may be impossible if UB + UB + delta < -1.  In that case, change int to be highest possible value
+      if ((-delta + 0.00001) > tempInt[2]) { int <- -delta + 0.00001
+      } else {
+        int <- seq(max(c(-delta + 0.00001, tempInt[1])), min(c((1 - delta)/2 - 0.00001, tempInt[2])), length=npNumbers)
+      }
+    }
   } else {
     if (delta == 0) { int <- seq(0.00001,.49999,length=npNumbers)
-    } else if (delta > 0) { int <- seq(0.00001, (1-delta)/2 - 0.0001, length=npNumbers)
+    } else if (delta > 0) { int <- seq(0.00001, (1-delta)/2 - 0.00001, length=npNumbers)
     } else if (delta < 0) { int <- seq(-delta + 0.00001, (1 - delta)/2 - 0.00001, length=npNumbers)}
     beta <- 0
   }
@@ -31,11 +48,12 @@ function(data, alternative, npNumbers, np.interval, beta, method, to.plot, ref.p
   #Find tables that have a test statistic as or more extreme than the observed statistic:
   if (method == "csm") {
     
+    # Use stored ordering matrix if available
     if (N <= 200 && delta == 0 && useStoredCSM) {
 
       if (!requireNamespace("ExactData", quietly = TRUE)) {
         stop(paste("ExactData R package must be installed when useStoredCSM=TRUE. To install ExactData R package, run:",
-              "`install.packages('ExactData', repos='https://pcalhoun1.github.io/drat/', type='source')`"))
+                   "`install.packages('ExactData', repos='https://pcalhoun1.github.io/drat/', type='source')`"))
       }
       
       if (alternative == "two.sided") { orderMat <- ExactData::orderCSMPairedMatTwoSided[[N]]
@@ -57,7 +75,7 @@ function(data, alternative, npNumbers, np.interval, beta, method, to.plot, ref.p
       findMoreExtreme <- list(TXO=NA, moreExtremeMat=moreExtremeMat)
     } else {
       findMoreExtreme <- moreExtremePairedCSM(data = data, N = N, alternative = alternative,
-                                              int = int, delta = delta, reject.alpha = reject.alpha)
+                                              int = int, doublePvalue = doublePvalue, delta = delta, reject.alpha = reject.alpha)
     }
     # if data is empty or findMoreExtreme is just FALSE, then return findMoreExtreme
     if (is.null(data) || isFALSE(findMoreExtreme)) { return(findMoreExtreme) }
@@ -66,7 +84,7 @@ function(data, alternative, npNumbers, np.interval, beta, method, to.plot, ref.p
   }
   
   #Search for the maximum p-value:
-  maxP <- maxPvaluePaired(findMoreExtreme$moreExtremeMat, N, int, beta, delta)
+  maxP <- maxPvaluePaired(findMoreExtreme$moreExtremeMat, N, int, beta, delta, doublePvalue)
   
   prob <- maxP$prob
   pvalue <- maxP$pvalue
@@ -74,7 +92,7 @@ function(data, alternative, npNumbers, np.interval, beta, method, to.plot, ref.p
   if (!is.null(reject.alpha) && pvalue > reject.alpha) { return(FALSE) }
   
   #Refine the p-value using the optimise function
-  if (ref.pvalue) {
+  if (ref.pvalue && length(int) > 1) {
     Tbls <- which(findMoreExtreme$moreExtremeMat==1, arr.ind = TRUE) - 1
     refPvalue <- rep(0,length(np))
     refNp <- rep(0,length(np))
@@ -85,7 +103,7 @@ function(data, alternative, npNumbers, np.interval, beta, method, to.plot, ref.p
       refPvalue[i] <- ref$objective
       refNp[i] <- ref$maximum
     }
-    refPvalue <- min(c(1, signif(refPvalue + beta, 12))) #Remove rounding errors and cap at 1
+    refPvalue <- min(c(1, signif((1+doublePvalue)*refPvalue + beta, 12))) #Remove rounding errors and cap at 1
     
     if (!all(is.na(refPvalue)) && max(refPvalue, na.rm=TRUE) > pvalue) {
       np <- refNp[refPvalue == max(refPvalue)]
@@ -103,6 +121,6 @@ function(data, alternative, npNumbers, np.interval, beta, method, to.plot, ref.p
     points(np, rep(pvalue, length(np)), col="red", pch=21, bg="red")
   }
   
-  TXO <- ifelse(swapFlg, -findMoreExtreme$TXO, findMoreExtreme$TXO)
+  TXO <- ifelse(swapFlg && method %in% c("uam", "uamcc"), -findMoreExtreme$TXO, findMoreExtreme$TXO)
   return(list(method=method, p.value=pvalue, test.statistic=TXO, np=np, np.range=c(min(int),max(int))))
 }

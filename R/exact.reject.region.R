@@ -97,6 +97,7 @@ function(n1, n2, alternative=c("two.sided", "less", "greater"), alpha=0.05,
     rownames(rejectRegion) <- 0:n1
     colnames(rejectRegion) <- 0:n2
     if (swapFlg){ rejectRegion <- t(rejectRegion) }
+    
     return(rejectRegion)
     
   } else if (method == "csm") {

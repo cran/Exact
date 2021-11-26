@@ -1,7 +1,7 @@
 moreExtremePairedCSM <-
-function(data, N, alternative, int, delta, reject.alpha){
+function(data, N, alternative, int, doublePvalue, delta, reject.alpha){
   
-  # There are cases where maxPvalue is faster than using the lookup tables in maxPvalueLookup
+  # There are cases where maxPvaluePaired is faster than using the lookup tables in maxPvaluePairedLookup
   lookupArray <- trinomCalc(N, int, delta)
   
   # Initialize first extreme table and considered tables:
@@ -30,9 +30,9 @@ function(data, N, alternative, int, delta, reject.alpha){
   
   # The two.sided and delta != 0 has to be programmed differently
   if (alternative == "two.sided" && delta != 0) {
-    moreExtremeMat <- csmPairedTemp2sidedDelta(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.alpha, checkPrev = TRUE, prevMoreExtremeMat)
+    moreExtremeMat <- csmPairedTemp2sidedDelta(data, moreExtremeMat, N, int, alternative, lookupArray, doublePvalue, delta, reject.alpha, checkPrev = TRUE, prevMoreExtremeMat)
   } else {
-    moreExtremeMat <- csmPairedTemp(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.alpha, checkPrev = TRUE, prevMoreExtremeMat)
+    moreExtremeMat <- csmPairedTemp(data, moreExtremeMat, N, int, alternative, lookupArray, doublePvalue, delta, reject.alpha, checkPrev = TRUE, prevMoreExtremeMat)
   }
   # If moreExtremeMat is just FALSE, then return FALSE
   if (isFALSE(moreExtremeMat)) { return(moreExtremeMat) }

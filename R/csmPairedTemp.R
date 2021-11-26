@@ -1,5 +1,5 @@
 csmPairedTemp <-
-function(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.alpha, checkPrev, prevMoreExtremeMat){
+function(data, moreExtremeMat, N, int, alternative, lookupArray, doublePvalue, delta, reject.alpha, checkPrev, prevMoreExtremeMat){
 
   # Only use McNemar for ties
   TX <- mcnemar_TX(NULL, N, delta=delta, CC=FALSE)
@@ -29,14 +29,14 @@ function(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.a
       if (alternative == 'two.sided') {
         if (all(AC[j,] == c(AC[j,2], AC[j,1]))) {
           CcondAC[j] <- maxPvaluePairedLookup(rbind(Tbls, AC[j,]),
-                                              int=int, lookupArray=lookupArray)$pvalue
+                                              int=int, lookupArray=lookupArray, doublePvalue=doublePvalue)$pvalue
         } else {
           CcondAC[j] <- maxPvaluePairedLookup(rbind(Tbls, AC[j,], c(AC[j,2], AC[j,1])),
-                                              int=int, lookupArray=lookupArray)$pvalue
+                                              int=int, lookupArray=lookupArray, doublePvalue=doublePvalue)$pvalue
         }
       } else {
         CcondAC[j] <- maxPvaluePairedLookup(rbind(Tbls, AC[j,]),
-                                            int=int, lookupArray=lookupArray)$pvalue
+                                            int=int, lookupArray=lookupArray, doublePvalue=doublePvalue)$pvalue
       }
     }
     
@@ -50,7 +50,7 @@ function(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.a
       # There are 2 cases where moreExtremeMat may be incorrect and needs to be updated:
       # (1) if no tables have been added and even most extreme table is not significant (unlikely)
       # (2) if previously added two tables where individually the p-values are < alpha, but together are larger than alpha (possible)
-      if (checkPrev && maxPvaluePairedLookup(Tbls, int=int, lookupArray=lookupArray)$pvalue > reject.alpha) {
+      if (checkPrev && maxPvaluePairedLookup(Tbls, int=int, lookupArray=lookupArray, doublePvalue=doublePvalue)$pvalue > reject.alpha) {
         moreExtremeMat <- prevMoreExtremeMat
       }
       
@@ -59,7 +59,7 @@ function(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.a
     
     # Update moreExtremeMat
     addRow <- AC[which(round(CcondAC, digits=12) == smallestPvalue), , drop=FALSE] + 1
-    # If there are ties, use McNemar's z-statistic to break ties
+    # If there are ties, use Asyptotic McNemar's z-statistic to break ties
     if (nrow(addRow) > 1) {
       TXties <- cbind(addRow, apply(addRow, 1, function(x) { TX[TX[ , 1] == (x[1]-1) & TX[ , 2] == (x[2]-1), 3] }))
       TXties <- TXties[order(TXties[,3]), ]
@@ -90,5 +90,5 @@ function(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.a
   }
   
   #Perform recursive loop
-  #csmPairedTemp(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.alpha, checkPrev, prevMoreExtremeMat)
+  #csmPairedTemp(data, moreExtremeMat, N, int, alternative, lookupArray, doublePvalue, delta, reject.alpha, checkPrev, prevMoreExtremeMat)
 }

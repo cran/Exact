@@ -1,6 +1,5 @@
 trinomCalc <-
 function(N, int, delta) {
-  
   lookupArray <- NULL
   for (x12 in 0:N){
     lookupArrayTemp <- matrix(0, nrow=N + 1, ncol=length(int))

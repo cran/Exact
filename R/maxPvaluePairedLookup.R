@@ -1,5 +1,5 @@
 maxPvaluePairedLookup <-
-function(tbls, int, lookupArray){
+function(tbls, int, lookupArray, doublePvalue){
   #Instead of calculating the trinomial probabilities several times for a more extreme cell,
   #calculate the probability once and then combine with other more extreme cells:
   prob <- matrix(0, ncol=length(int))
@@ -7,7 +7,7 @@ function(tbls, int, lookupArray){
     prob <- prob + lookupArray[[tbls[row,1]+1]][tbls[row,2]+1, ]
   }
   
-  prob <- signif(prob, 12) #Remove rounding errors
+  prob <- signif((1+doublePvalue)*prob, 12) #Remove rounding errors and double probabilities if applicable
   
   np <- int[which(prob==max(prob, na.rm=TRUE))]
   pvalue <- max(prob, na.rm=TRUE)

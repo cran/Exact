@@ -1,7 +1,7 @@
 csmPairedTemp2sidedDelta <-
-function(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.alpha, checkPrev, prevMoreExtremeMat){
+function(data, moreExtremeMat, N, int, alternative, lookupArray, doublePvalue, delta, reject.alpha, checkPrev, prevMoreExtremeMat){
   
-  # Only use McNemar for ties
+  # Only use Asymptotic McNemar for ties
   TX <- mcnemar_TX(NULL, N, delta=delta, CC=FALSE)
   TX[, 3] <- signif(TX[ , 3], 12)  #Remove rounding errors
   TX <- TX[order(TX[,1], TX[,2]), ]
@@ -34,7 +34,7 @@ function(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.a
     CcondAC <- rep(0, nrow(AC))
     for (j in 1:nrow(AC)) {
       CcondAC[j] <- maxPvaluePairedLookup(rbind(Tbls, AC[j,]),
-                                    int=int, lookupArray=lookupArray)$pvalue
+                                    int=int, lookupArray=lookupArray, doublePvalue=doublePvalue)$pvalue
     }
     
     smallestPvalue <- min(round(CcondAC, digits=12))
@@ -47,7 +47,7 @@ function(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.a
       # There are 2 cases where moreExtremeMat may be incorrect and needs to be updated:
       # (1) if no tables have been added and even most extreme table is not significant (unlikely)
       # (2) if previously added two tables where individually the p-values are < alpha, but together are larger than alpha (possible)
-      if (checkPrev && maxPvalueLookup(Tbls, int=int, lookupArray=lookupArray)$pvalue > reject.alpha) {
+      if (checkPrev && maxPvaluePairedLookup(Tbls, int=int, lookupArray=lookupArray, doublePvalue=doublePvalue)$pvalue > reject.alpha) {
         moreExtremeMat <- prevMoreExtremeMat
       }
       return(moreExtremeMat)
@@ -82,5 +82,5 @@ function(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.a
   }
   
   #Perform recursive loop
-  #csmPairedTemp2sidedDelta(data, moreExtremeMat, N, int, alternative, lookupArray, delta, reject.alpha, checkPrev, prevMoreExtremeMat)
+  #csmPairedTemp2sidedDelta(data, moreExtremeMat, N, int, alternative, lookupArray, doublePvalue, delta, reject.alpha, checkPrev, prevMoreExtremeMat)
 }

@@ -1,5 +1,5 @@
 maxPvaluePaired <-
-function(Mat, N, int, beta, delta){
+function(Mat, N, int, beta, delta, doublePvalue){
   
   index <- 1
   prob <- rep(NA, length(int))
@@ -8,7 +8,7 @@ function(Mat, N, int, beta, delta){
     prob[index] <- sum(trinom(Tbls[ , 1], Tbls[ , 2], N, p12=probVal, p21=probVal, delta=delta))
     index <- index + 1
   }
-  prob <- signif(prob + beta, 12) #Remove rounding errors
+  prob <- signif((1+doublePvalue)*prob + beta, 12) #Remove rounding errors and double probabilities if applicable
   
   # Cutoff probabilities at 1 (only relevant if beta != 0) #
   prob[!is.na(prob) & prob > 1] <- 1

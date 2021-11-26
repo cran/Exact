@@ -6,7 +6,7 @@ function(data, alternative, npNumbers, np.interval, beta, method, tsmethod, to.p
   
   if (any(Ns <= 0)) { stop("Can't have a sample size of 0 for one of the groups") }
   
-  # If alternative is "greater" or two.sided test has first group with larger proportion, then swap groups.  This is a major
+  # If alternative is "greater" or two.sided test has p1 - p2 > delta, then swap groups.  This is a major
   # simplification, since code can now only consider cases where the alternative is less than or two.sided with less than always being more
   # extreme.  Will change the test statistic at the end
   swapFlg <- ((alternative == "greater") || (alternative=="two.sided" && (data[1,1]/Ns[1] - data[1,2]/Ns[2]) > delta))
@@ -24,11 +24,13 @@ function(data, alternative, npNumbers, np.interval, beta, method, tsmethod, to.p
   } else { doublePvalue <- FALSE }
   
   #Specify nuisance parameter range
-  if (np.interval) {
+  if (np.interval && beta != 0) {
     tempInt <- binom.CI(sum(data[1,]), N, conf.level=1-beta)
     if (delta == 0) { int <- seq(max(c(0.00001, tempInt[1])), min(c(0.99999, tempInt[2])), length=npNumbers)
-    } else if (delta > 0) { int <- seq(max(c(0.00001, tempInt[1])), min(c(1 - delta - 0.00001, tempInt[2])), length=npNumbers)
-    } else if (delta < 0) { int <- seq(max(c(abs(delta) + 0.00001, tempInt[1])), min(c(0.99999, tempInt[2])), length=npNumbers)}
+    } else if (delta > 0) {
+      int <- seq(max(c(0.00001, tempInt[1])), min(c(1 - delta - 0.00001, tempInt[2])), length=npNumbers)
+    } else if (delta < 0) {
+      int <- seq(max(c(abs(delta) + 0.00001, tempInt[1])), min(c(0.99999, tempInt[2])), length=npNumbers)}
   } else {
     if (delta == 0) { int <- seq(0.00001,.99999,length=npNumbers)
     } else if (delta > 0) { int <- seq(0.00001, 1 - delta - 0.00001, length=npNumbers)
@@ -86,9 +88,6 @@ function(data, alternative, npNumbers, np.interval, beta, method, tsmethod, to.p
   }
   
   #Search for the maximum p-value:
-  #lookupArray <- dbinomCalc(Ns, int, delta)
-  #Tbls <- which(findMoreExtreme$moreExtremeMat==1, arr.ind = TRUE) - 1
-  #maxPvalueLookup(Tbls, int=int, lookupArray, doublePvalue)
   maxP <- maxPvalue(findMoreExtreme$moreExtremeMat, Ns, int, beta, delta, doublePvalue)
   
   prob <- maxP$prob

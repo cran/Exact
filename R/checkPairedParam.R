@@ -1,6 +1,6 @@
 checkPairedParam <-
 function(data=NULL, p12=NULL, p21=NULL, N=NULL, method="",
-                             alternative="", npNumbers=100, np.interval=FALSE, beta=0.001,
+                             alternative="", tsmethod="", npNumbers=100, np.interval=FALSE, beta=0.001,
                              conf.int=FALSE, conf.level=0.95,
                              to.plot=TRUE, ref.pvalue=TRUE, delta=0, reject.alpha=NULL,
                              alpha=0.05, simulation=FALSE, nsim = 100, convexity=TRUE, useStoredCSM=TRUE) {
@@ -28,10 +28,14 @@ function(data=NULL, p12=NULL, p21=NULL, N=NULL, method="",
   if (nsim < 1) { stop("Need at least one simulation") }
 
   ### Special case that cannot be performed ###
+  if (alternative=="two.sided" && tsmethod == "square" && method == "ucm") {
+    if (delta != 0) { stop("UCM test with two-sided nonzero delta cannot be implemented when tsmethod='square'.  Suggest using tsmethod='central'") }
+    if (conf.int) { stop("UCM test with two-sided CIs cannot be implemented when tsmethod='square'.  Suggest using tsmethod='central'") }
+  }
   
-  if (method == "conditional exact mcnemar" && delta != 0) { stop("Conditional McNemar's test cannot test a nonzero delta") }
+  if (method == "cm" && delta != 0) { stop("CM test cannot test a nonzero delta") }
   
-  if (method %in% c("csm", "conditional exact mcnemar", "asymptotic mcnemar", "asymptotic mcnemar with cc") && np.interval) {
-    stop("Interval of nuisance parameter cannot be used with CSM, conditional exact McNemar, or asymptotic McNemar. Suggest using np.interval=FALSE")
+  if (method %in% c("csm", "cm", "am", "amcc") && np.interval) {
+    stop("Interval of nuisance parameter cannot be used with CSM, CM, or AM tests. Suggest using np.interval=FALSE")
   }
 }
