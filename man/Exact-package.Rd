@@ -19,6 +19,7 @@
 \alias{maxPvalueLookup}
 \alias{maxPvaluePaired}
 \alias{maxPvaluePairedLookup}
+\alias{maxPvalueMultinom}
 \alias{mcnemar.2x2}
 \alias{mcnemar_TX}
 \alias{methodText}
@@ -26,6 +27,7 @@
 \alias{moreExtremeCSM}
 \alias{moreExtremePaired}
 \alias{moreExtremePairedCSM}
+\alias{multinom}
 \alias{pairedMethodText}
 \alias{santner_TX}
 \alias{searchExtreme}

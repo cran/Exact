@@ -34,6 +34,11 @@ function(data=NULL, p1=NULL, p2=NULL, n1=NULL, n2=NULL, method="", model="",
     if (delta != 0) { stop("Boschloo's test with two-sided nonzero delta cannot be implemented when tsmethod='square'.  Suggest using tsmethod='central'") }
     if (conf.int) { stop("Boschloo's test with two-sided CIs cannot be implemented when tsmethod='square'.  Suggest using tsmethod='central'") }
   }
+  if (alternative=="two.sided" && tsmethod == "square" && method == "z-unpooled") {
+    if (delta != 0) { stop("Z-unpooled test with two-sided nonzero delta cannot be implemented when tsmethod='square'.  Suggest using tsmethod='central'") }
+    if (conf.int) { stop("Z-unpooled test with two-sided CIs cannot be implemented when tsmethod='square'.  Suggest using tsmethod='central'") }
+  }
+  
   if (method == "fisher" && delta != 0) { stop("Fisher's test cannot test a nonzero delta.  See ?fisher.test") }
   if (method %in% c("pearson chisq", "yates chisq") && delta != 0) { stop("Chi-square tests cannot test a nonzero delta.  See ?prop.test or ?chisq.test") }
   

@@ -61,7 +61,7 @@ function(n1, n2, alternative=c("two.sided", "less", "greater"), alpha=0.05,
     # For the tests with a test statistic:
     TX <- switch(method,
                  "z-pooled" = zpooled_TX(NULL, c(n1, n2), delta=delta),
-                 "z-unpooled" = zunpooled_TX(NULL, c(n1, n2), delta=delta),
+                 "z-unpooled" = zunpooled_TX(NULL, c(n1, n2)),
                  "boschloo" = fisher.2x2(NULL, c(n1, n2), alternative=alternative),
                  "santner and snell" = santner_TX(NULL, c(n1, n2), delta=delta),
                  "pearson chisq" = chisq_TX(NULL, c(n1, n2), yates=FALSE),

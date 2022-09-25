@@ -1,5 +1,5 @@
 zunpooled_TX <-
-function(data, Ns, delta) {
+function(data, Ns) {
   N <- sum(Ns)
   if (!is.null(data)) {
     x <- data[1,1]
@@ -11,7 +11,7 @@ function(data, Ns, delta) {
   p1 <- x/Ns[1]
   p2 <- y/Ns[2]
   
-  numerator <- p1 - p2 - delta
+  numerator <- p1 - p2
   denominator <- sqrt(p2*(1-p2)/Ns[2]+(p1)*(1-p1)/Ns[1])
   TX <- numerator / denominator
   TX[numerator == 0 & denominator == 0] <- 0

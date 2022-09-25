@@ -16,23 +16,25 @@ function(conf.level, ESTIMATE, data, alternative, npNumbers, np.interval, beta, 
   if (alternative == "greater" || ESTIMATE[[1]] >= 0.9998) { UB <- 1
   } else {
     UB <- 1; prevUB <- 999; lowerVal <- max(c(ESTIMATE, -0.9998))
-    while (UB != prevUB) {
+    while (UB != prevUB & lowerVal < 0.9998) {
       prevUB <- UB  # update prevUB before updating UB
       UBroots <- uniroot.all(rootFunc, lower=lowerVal, upper=0.9998, n=100, tol=0.0001)
       if (length(UBroots) != 0) { UB <- max(UBroots) }
       lowerVal <- UB + 0.001  #After finding largest root, add a small value and see if there's any other larger root that was missed
     }
+    if (UB >= 0.9998) { UB <- 1 }
   }
   
   if (alternative == "less" || ESTIMATE[[1]] <= -0.9998) { LB <- -1
   } else {
     LB <- -1; prevLB <- 999; upperVal <- min(c(ESTIMATE, 0.9998))
-    while (LB != prevLB) {
+    while (LB != prevLB & upperVal > -0.9998) {
       prevLB <- LB  # update prevLB before updating LB
       LBroots <- uniroot.all(rootFunc, lower=-0.9998, upper=upperVal, n=100, tol=0.0001)
       if (length(LBroots) != 0) { LB <- min(LBroots) }
       upperVal <- LB - 0.001  #After finding smallest root, subtract a small value and see if there's any other smaller root that was missed
     }
+    if (LB <= -0.9998) { LB <- -1 }
   }
   
   return(c(LB, UB))

@@ -42,7 +42,8 @@ function(data, alternative, npNumbers, np.interval, beta, method, tsmethod, to.p
   if (method == "csm") {
     
     # Use stored ordering matrix if available
-    if (max(Ns) <= 100 && delta == 0 && useStoredCSM) {
+    if (delta == 0 && useStoredCSM &&
+         ( (max(Ns) <= 100) || ((Ns[1]+1)*(Ns[2]+1) <= 15000 && Ns[1] <= 2*Ns[2] && Ns[2] <= 2*Ns[1]) ) ) {
       
       if (!requireNamespace("ExactData", quietly = TRUE)) {
         stop(paste("ExactData R package must be installed when useStoredCSM=TRUE. To install ExactData R package, run:",
@@ -77,7 +78,8 @@ function(data, alternative, npNumbers, np.interval, beta, method, tsmethod, to.p
       
       # Set TXO to be NA (not ordering step number)
       findMoreExtreme <- list(TXO=NA, moreExtremeMat=moreExtremeMat)
-    } else {      
+      
+    } else {
       findMoreExtreme <- moreExtremeCSM(data = data, Ns = Ns, alternative = alternative,
                                         int = int, doublePvalue = doublePvalue, delta = delta, reject.alpha = reject.alpha)
     }

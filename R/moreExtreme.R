@@ -4,15 +4,15 @@ function(method, data, Ns, alternative, int, delta){
   # If alternative="less", then only need to calculate boundary in upper triangle (faster than calculating all test statistics).
   # If alternative="two.sided" and delta=0, then can also calculate boundary in upper triangle since the lower triangle is always symmetric
   # If alternative="two.sided" and delta != 0, then unfortunately, need to consider every table.
-  # Special case for Boschloo: Fisher's p-value doesn't include a delta term, so use same ordering ignoring delta
+  # Special case for Boschloo and Z-unpooled: test statistic doesn't include a delta term, so use same ordering ignoring delta
   # (note: this can't work if delta != 0 and two-sided)
   
   if (alternative != "two.sided" || delta == 0) {
     
-    # Important note: ignore delta when ordering "boschloo"
+    # Important note: ignore delta when ordering "boschloo" or "z-unpooled"
     TXO <- switch(method, 
                   "z-pooled" = zpooled_TX(data, Ns, delta=delta),
-                  "z-unpooled" = zunpooled_TX(data, Ns, delta=delta),
+                  "z-unpooled" = zunpooled_TX(data, Ns),
                   "boschloo" = fisher.2x2(data, alternative=alternative),
                   "santner and snell" = santner_TX(data, Ns, delta=delta))[3]
     
@@ -31,7 +31,7 @@ function(method, data, Ns, alternative, int, delta){
           newDat <- matrix(c(i, Ns[1]-i, j, Ns[2]-j), 2, 2)
           newTX <- switch(method,
                           "z-pooled" = zpooled_TX(newDat, Ns, delta=delta),
-                          "z-unpooled" = zunpooled_TX(newDat, Ns, delta=delta),
+                          "z-unpooled" = zunpooled_TX(newDat, Ns),
                           "boschloo" = fisher.2x2(newDat, alternative=alternative),
                           "santner and snell" = santner_TX(newDat, Ns, delta=delta))[3]
           
@@ -70,7 +70,7 @@ function(method, data, Ns, alternative, int, delta){
     
     TX <- switch(method, 
                  "z-pooled" = zpooled_TX(NULL, Ns, delta=delta),
-                 "z-unpooled" = zunpooled_TX(NULL, Ns, delta=delta),
+                 "z-unpooled" = zunpooled_TX(NULL, Ns),
                  "boschloo" = fisher.2x2(NULL, Ns, alternative=alternative),
                  "santner and snell" = santner_TX(NULL, Ns, delta=delta))
     

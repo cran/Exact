@@ -1,7 +1,7 @@
 \name{exact.test}
 \alias{exact.test}
 \alias{binomialCode}
-\alias{multinomialCode}
+\alias{multinomCode}
 \title{Unconditional Exact Tests for 2x2 Tables with Independent Samples}
 \description{Calculates Barnard's or Boschloo's unconditional exact test for binomial or multinomial models with independent samples}
 \usage{
@@ -66,7 +66,7 @@ The tests can also be implemented for non-inferiority hypotheses by changing the
 
 For two-sided tests, the code will either sum the probabilities for both sides of the table if \code{tsmethod = "square"} (Default, same approach as \code{fisher.test}) or construct a one-sided test and double the p-value if \code{tsmethod = "central"}.  Generally, the "square" procedure is more powerful and conventional, although there are some advantages with using the "central" procedure.  Mainly, Boschloo's test cannot order tables (i.e., use Fisher's p-value) for a two-sided alternative with non-zero delta.  Thus, to calculate a two-sided confidence interval with Boschloo's test, one has to resort to using the "central" approach.  For other tests, there is an equivalent statistic based on delta, and the two-sided p-value is determined by either the Agresti-Min interval (\code{tsmethod = "square"}) or Chan-Zhang interval (\code{tsmethod = "central"}).
 
-The CSM test is computationally intensive due to iteratively maximizing the p-value calculation to order the tables.  The CSM ordering matrix has been stored for all possible sample sizes less than or equal to 100 (i.e., max(n1,n2)<=100).  Thus, using the \code{useStoredCSM = TRUE} can greatly improve computation time.  However, the stored ordering matrix was computed with \code{npNumbers=100} and it is possible that the ordering matrix was not optimal for larger \code{npNumbers}.  Increasing \code{npNumbers} and setting \code{useStoredCSM = FALSE} ensures the p-value is correctly calculated at the expense of significantly greater computation time.  The stored ordering matrix is not used in the calculation of confidence intervals or non-inferiority tests, so CSM can still be very computationally intensive.
+The CSM test is computationally intensive due to iteratively maximizing the p-value calculation to order the tables.  The CSM ordering matrix has been stored for all possible sample sizes less than or equal to 100 (i.e., max(n1,n2)<=100).  In addition, any table with (n1+1)x(n2+1)<=15,000 with a ratio between 1:1 and 2:1 is stored.  Thus, using the \code{useStoredCSM = TRUE} can greatly improve computation time.  However, the stored ordering matrix was computed with \code{npNumbers=100} and it is possible that the ordering matrix was not optimal for larger \code{npNumbers}.  Increasing \code{npNumbers} and setting \code{useStoredCSM = FALSE} ensures the p-value is correctly calculated at the expense of significantly greater computation time.  The stored ordering matrix is not used in the calculation of confidence intervals or non-inferiority tests, so CSM can still be very computationally intensive.
 
 The above description applies to the binomial model.  The multinomial model is similar except there are two nuisance parameters.  The CSM test has not been developed for multinomial models.  Improvements to the code have focused on the binomial model, so multinomial models takes substantially longer.
 }

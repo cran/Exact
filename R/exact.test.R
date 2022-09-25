@@ -59,7 +59,7 @@ function(data, alternative=c("two.sided", "less", "greater"), npNumbers=100, np.
   }
   
   if (model=="multinomial") {
-    results <- multinomialCode(data, alternative=alternative, np.interval=np.interval, beta=beta, npNumbers=npNumbers, method=method)
+    results <- multinomCode(data, alternative=alternative, np.interval=np.interval, beta=beta, npNumbers=npNumbers, method=method)
     
     #Convert data to htest structure
     N <- sum(data)
