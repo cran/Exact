@@ -49,12 +49,25 @@ function(method, data, Ns, alternative, int, delta){
           }
           
           if (rejectFlg) {
-            # If more extreme test statistic, then know the remaining columns in the row is more extreme
-            moreExtremeMat[i+1, (j+1):(Ns[2]+1)] <- 1
-            break
+            
+            # If more extreme test statistic, then often know the remaining columns in the row is more extreme
+            if (i != Ns[1] && j != Ns[2] && j != (Ns[2] - 1) &&
+                abs(i/(Ns[1]-i) - j/(Ns[2]-j)) < abs(i/(Ns[1]-i) - (j+1)/(Ns[2]-j-1))) {
+              moreExtremeMat[i+1, (j+1):(Ns[2]+1)] <- 1
+              break
+            } else {
+              moreExtremeMat[i+1, j+1] <- 1
+            }
+            
           } else {
-            # If less extreme test statistic, then know the remaining rows in the column is less extreme
-            moreExtremeMat[(i+1):(Ns[1]+1), j+1] <- 0
+            
+            # If less extreme test statistic, then often know the remaining rows in the column is less extreme
+            if (i != Ns[1] && i != (Ns[1] - 1) && j != Ns[2] &&
+                abs(i/(Ns[1]-i) - j/(Ns[2]-j)) > abs((i+1)/(Ns[1]-i-1) - j/(Ns[2]-j))) {
+              moreExtremeMat[(i+1):(Ns[1]+1), j+1] <- 0
+            } else {
+              moreExtremeMat[i+1, j+1] <- 0
+            }
           }
         }
       }
@@ -79,11 +92,11 @@ function(method, data, Ns, alternative, int, delta){
     TX[, 3] <- signif(TX[ , 3], 12)  #Remove rounding errors
     
     TXO <- TX[TX[,1]==data[1,1] & TX[,2]==data[1,2], 3]
-  
+    
     # Note: alternative must be "two.sided"
     if (method %in% c("z-pooled", "z-unpooled", "santner and snell")) { rejectFlg <- (abs(TX[,3]) >= abs(TXO))
     } else { rejectFlg <- (TX[,3] <= TXO) }
-      
+    
     moreExtremeMat <- matrix(rejectFlg, Ns[1]+1, Ns[2]+1, byrow=TRUE, dimnames=list(0:Ns[1], 0:Ns[2]))*1
   }
   return(list(TXO=TXO, moreExtremeMat=moreExtremeMat))

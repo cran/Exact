@@ -1,4 +1,4 @@
-37c3d6cc232df0e41fbc5324433b232c *DESCRIPTION
+2bef5b191b87f5fc472932cfbd8069b2 *DESCRIPTION
 0f078e1beb32c20d58ae9ea93b5f4fbb *NAMESPACE
 f4b351cb5ad1bc0f3d8a6ef736966e09 *R/binom.CI.R
 428b35d3096cbf3c689987d3360210fe *R/binomialCode.R
@@ -26,7 +26,7 @@ f0ed6a1df9cda9a8da57f6d4a47b4140 *R/maxPvaluePairedLookup.R
 a461d8e88b918b8cf0e295d2bbae0256 *R/mcnemar.2x2.R
 60b11e68d999637674a4335b2cddf7b1 *R/mcnemar_TX.R
 ad2a7e6c6a40673faf74515223aabd5c *R/methodText.R
-e8891df816e969f095bcc7b749bc76d2 *R/moreExtreme.R
+b8869d96be29a53d392cf26186e75499 *R/moreExtreme.R
 ca39e431910725116ad52591a0d9e0ac *R/moreExtremeCSM.R
 97f6a0fc4b31edf8c46390a53a57e548 *R/moreExtremePaired.R
 0fe9270143aed93cd7007d6e95b5afa1 *R/moreExtremePairedCSM.R
@@ -42,14 +42,14 @@ a9af71459b27a5923752617c83b64d06 *R/power.exact.test.R
 117760bd37eaabb97b5ce398b357baaf *R/searchExtreme.R
 b372896dbbf47db122a35b79b8e278ad *R/searchExtremePaired.R
 4d23a949075c32b9a9bb8b073c7598bc *R/searchMaxProbMultinom.R
-d4349d5f4d6d75919a50af9036cb4af1 *R/trinom.R
+2df7b02aee18fa200b5070ddd06f63ee *R/trinom.R
 1c6cd61e831342d69bedd90e26d9df80 *R/trinomCalc.R
 7a749b084cf8eb4792745d3daaeeb50d *R/updateMat.R
 542110d87b2b26bf688061a922164432 *R/zpooled_TX.R
 3178b523e0e018c938721326ad43cd94 *R/zunpooled_TX.R
 8911096079ca345b43b91835b4a8c3fe *R/zzz.R
-5eaa477f1eb3fbaf26f00efedbd5e4ea *build/partial.rdb
-34ee11569bf60e9b283b6c30e98b4934 *inst/NEWS.Rd
+6390f4b3a7781adb68c50c2446ff8c59 *build/partial.rdb
+1c07a3cf2ad775d035dcb73579f042ce *inst/NEWS.Rd
 9778fb2d369d6981116f85da5eb1b5b5 *man/Exact-package.Rd
 ec1407f1677e59f83790f020f3d7202a *man/exact.reject.region.Rd
 9f84f602057ac8f2fa01851e6572dd7b *man/exact.test.Rd
